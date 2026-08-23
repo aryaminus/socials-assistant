@@ -25,6 +25,9 @@ controlkeel/
 # packaging artifacts
 *.tgz
 *.skill
+# prepack copies root README/LICENSE into apps/mcp/
+apps/mcp/README.md
+apps/mcp/LICENSE
 
 # tooling caches
 .wrangler/

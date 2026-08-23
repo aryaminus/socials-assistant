@@ -18,7 +18,7 @@
   "scripts": {
     "build": "tsc -b",
     "bundle": "tsc -b && tsx ../../scripts/bundle.ts",
-    "prepack": "tsc -b && tsx ../../scripts/bundle.ts"
+    "prepack": "tsc -b && tsx ../../scripts/bundle.ts && cp ../../README.md ../../LICENSE ."
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",
