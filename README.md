@@ -18,6 +18,20 @@ git clone https://github.com/aryaminus/socials-assistant && cd socials-assistant
 ./setup.sh && node apps/mcp/bin/socials-mcp.js onboard
 ```
 
+**npm (any agent with Node.js):**
+```bash
+npx @aryaminus/socials-mcp onboard
+```
+
+## Packages
+
+| Channel | Package |
+|---------|---------|
+| **npm** | [`@aryaminus/socials-mcp`](https://www.npmjs.com/package/@aryaminus/socials-mcp) |
+| **GitHub Packages** | [`aryaminus/socials-assistant`](https://github.com/aryaminus/socials-assistant/pkgs/npm/socials-mcp) |
+| **Docker** | `ghcr.io/aryaminus/socials-assistant` |
+| **GitHub Release** | [v0.4.5](https://github.com/aryaminus/socials-assistant/releases/tag/v0.4.5) — cosign-signed, checksums |
+
 ## How it works
 
 ```

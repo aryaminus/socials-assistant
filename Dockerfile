@@ -1,7 +1,7 @@
 # socials-assistant — self-contained HTTP MCP + weekly automation
 FROM node:25-slim AS build
 WORKDIR /app
-RUN corepack enable
+RUN corepack enable || npm install -g pnpm@10
 COPY . .
 RUN pnpm install --frozen-lockfile=false && pnpm build
 
