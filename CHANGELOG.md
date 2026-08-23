@@ -35,7 +35,7 @@ All notable changes to this project are documented here. Format: Keep a Changelo
 - `socials-mcp --version`; HTTP `/health` and `/version` endpoints
 - MCP contract audit (`scripts/audit-mcp.ts`) and skills spec lint (`scripts/lint-skills.ts`), wired into CI
 - Distribution formats: `server.json` (official MCP Registry), `.claude-plugin/` (Claude Code marketplace), `.agents/plugins/marketplace.json` (skills CLI), `gemini-extension.json`, `smithery.yaml`, `.well-known/mcp/server-card.json`, `llms.txt`
-- Self-hosting: `Dockerfile`, `docker-compose.yml`, `render.yaml` blueprint
+- Self-hosting: Docker/GHCR image for VPS deployments
 - Repo standards: AGENTS.md (+CLAUDE.md symlink), CHANGELOG, SECURITY, SUPPORT, CONTRIBUTING, CODEOWNERS, issue/PR templates, Dependabot
 - Skills restructured to the agentskills.io spec: 6-field frontmatter, progressive disclosure (`references/`, `assets/`), fully-qualified tool names, fully generic (no creator-specific examples baked in)
 - `.claude/skills/` and `.agents/skills/` symlinks for native cross-agent skill discovery

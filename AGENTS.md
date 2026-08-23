@@ -13,13 +13,12 @@ One vault, every agent: Claude Code, Claude Desktop, Codex, Gemini CLI, opencode
 | claude.ai (web) | Download `.skill` bundle from releases → Settings → Capabilities → Skills → + |
 | Claude Desktop | `claude_desktop_config.json` snippet in `agents/README.md` |
 | Gemini CLI | `gemini-extension.json` committed; or MCP block in `~/.gemini/settings.json` |
-| ChatGPT | Deploy the Worker (below) → add as plugin/custom connector (Business/Enterprise) or via Responses API `tools: [{type: "mcp"}]` |
-| Docker / any VPS | `docker compose up --build` → HTTP MCP at `:3344` |
+| ChatGPT | Deploy the Worker → add as plugin/custom connector (Business/Enterprise) or via Responses API `tools: [{type: "mcp"}]` |
 | Cloud (multi-tenant) | `cd infra/worker && npx wrangler deploy` (guide: `docs/hosting-cloudflare.md`) |
 
 Zero-install cloud journey (deploy button → /setup checklist → claude.ai connector): **docs/GET-STARTED-CLOUD.md**
 
-From source (single setup):
+From source:
 
 ```bash
 git clone https://github.com/aryaminus/socials-assistant && cd socials-assistant
@@ -41,29 +40,6 @@ npx tsx scripts/weekly-digest.ts           # digest → digests/YYYY-WW.md (+ op
 Tests, audit, lint, CodeQL also run in CI (`.github/workflows/ci.yml`, `codeql.yml`).
 
 ## Release process (astro-style, tag-driven)
-
-```text
-commit A          commit B (tag v0.5.0)               CI pipeline
-───────────────────┬─────────────────────────────────────────────
-bump version       │─→ git tag vX.Y.Z && git push origin vX.Y.Z
-chore(release):    │                                       
-bump version to    │                                       
-X.Y.Z             │                                       
-                   ├──────────────────────────────→ release-smoke.yml (auto)
-                   │   runs on chore(release): bump version commits
-                   │   build → tests → audit → lint → doctor → smoke
-                   │   builds 6 .skill bundles + npm tarball
-                   │   uploads release-candidate-dist artifact
-                   │                                       
-                   ├──────────────────────────────→ release.yml (auto)
-                   │   triggered by tag push v*
-                   │   waits for release-smoke to succeed for this SHA
-                   │   downloads smoke artifact (no rebuild)
-                   │   cosign sign + checksums
-                   │   creates GitHub Release with all assets
-                   │   npm publish --provenance
-                   │   verifies all channels
-```
 
 1. Bump version together: root `package.json` · `apps/mcp/package.json` · `server.json` · `.claude-plugin/plugin.json` (+ `CHANGELOG.md`)
 2. Commit: `git commit -m "chore(release): bump version to X.Y.Z"` — the exact prefix triggers the Release Smoke workflow
@@ -109,15 +85,6 @@ Errors return as tool results (`isError: true`) with a `fix:` hint — agents sh
 - Platform OAuth tokens encrypted at rest (AES-256-GCM), never returned by any tool.
 - Outreach is draft-first: no tool sends email; `SOCIALS_ALLOW_SEND` gates any send automation the user wires separately (Resend MCP).
 - `vault_query` is read-only SELECT, blocked from writes/DDL.
-
-## Marketplace listings
-
-| Registry | Status |
-|----------|--------|
-| Official MCP Registry | `server.json` ready (`mcp-publisher publish`) |
-| Claude Plugin Marketplace | `.claude-plugin/` committed |
-| Smithery | `smithery.yaml` committed |
-| Glama / PulseMCP | auto-index once public |
 
 ## Repo conventions
 
