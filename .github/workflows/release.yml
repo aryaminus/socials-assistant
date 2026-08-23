@@ -200,7 +200,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write
+      id-token: write          # for cosign provenance; npm Trusted Publishing (OIDC) when ready
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

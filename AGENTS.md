@@ -100,6 +100,13 @@ Set in GitHub → Settings → Secrets and variables → Actions:
 | `NPM_TOKEN` | npm publish (`release.yml`) | npmjs.com → Access Tokens → Generate New Token (Classic) → Automation scope |
 | `GITHUB_TOKEN` | GHCR push, releases | Auto-provided by GitHub Actions — no setup needed |
 
+**After first npm publish**, switch to Trusted Publishing (OIDC) — no token needed:
+
+1. Go to npmjs.com → `socials-mcp` → Settings → Publishing access → **Add trusted publisher**
+2. Provider: **GitHub Actions**
+3. Owner: `aryaminus`, Repository: `socials-assistant`, Workflow: `release.yml`
+4. Delete `NPM_TOKEN` from GitHub secrets — the workflow uses `id-token: write` for OIDC automatically
+
 ### Cloudflare Worker secrets (for cloud deployment)
 
 Set in Cloudflare dashboard → Workers → your worker → Settings → Variables:
