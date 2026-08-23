@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here. Format: Keep a Changelog; versioning: SemVer.
 
+## [0.4.8] — 2026-08-23
+
+### Changed
+- npm metadata: expanded keywords for search discovery (mcp, model-context-protocol, content-creator, ai-agent, claude, chatgpt, gemini, cursor, opencode, …)
+- Sharper package description
+
 ## [0.4.7] — 2026-08-23
 
 ### Fixed

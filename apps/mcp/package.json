@@ -1,6 +1,6 @@
 {
   "name": "@aryaminus/socials-mcp",
-  "version": "0.4.7",
+  "version": "0.4.8",
   "description": "MCP server for social media creators — pull TikTok, Instagram, Facebook, YouTube analytics into a local vault, get weekly digests, draft brand-outreach emails with real numbers. Official APIs only, no scraping.",
   "license": "MIT",
   "type": "module",
