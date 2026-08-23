@@ -7,7 +7,21 @@ All notable changes to this project are documented here. Format: Keep a Changelo
 ### Added
 - Zero-install cloud journey (docs/GET-STARTED-CLOUD.md): Deploy-to-Cloudflare button (root wrangler.jsonc auto-provisions Worker+D1+KV), self-service `/setup` checklist page served by the Worker (no CLI), in-chat platform connections (`platform_oauth_url` / `platform_oauth_exchange` — agent issues consent link, human pastes the redirect back; tokens exchanged server-side, stored encrypted)
 - Platform-OAuth landing page (/oauth/*/done) with paste-back instructions
-- README restructured: Quickstart A = zero install (claude.ai), Quickstart B = local
+- Release pipeline aligned with controlkeel pattern: `release-smoke.yml` (builds + tests + skill bundles on version-bump commits), `release.yml` (tag-driven, waits for smoke, cosign + checksums, GitHub Release, npm publish with provenance)
+- `.env.example` template with all environment variables documented
+- `script-review` skill: search demand research, Good/Bad/Ugly summary, on-screen text cues with timestamps, mid-video re-hook suggestions, content-mix fit dimension, plain language rule
+
+### Changed
+- README rewritten: concise, no redundant info, points to docs for details
+- Removed Render deployment (`render.yaml`) and Smithery marketplace (`smithery.yaml`)
+- Removed Render/Fly/Railway from provider comparisons in infra/worker/README.md
+- CI (`ci.yml`) skips version-bump commits, concurrency groups, paths-ignore for docs
+- `apps/mcp/package.json`: aligned `@modelcontextprotocol/sdk` to `^1.30.0`, `zod` to `^3.25.0`; fixed `main`/`exports` to point to `dist-bundle/`
+- AGENTS.md: full setup reference (GitHub secrets, Cloudflare secrets, local env, npm publish), missing env vars added (SOCIALS_CSV_DIR, SOCIALS_OAUTH_PORT, SOCIALS_ALLOWED_ORIGINS)
+
+### Removed
+- `render.yaml` (Render deployment)
+- `smithery.yaml` (Smithery marketplace listing)
 
 ## [0.3.0] — 2026-08-23
 
