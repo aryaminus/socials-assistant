@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented here. Format: Keep a Changelog; versioning: SemVer.
 
+## [0.4.2] — 2026-08-23
+
+### Fixed
+- npm publish: hardcode `.npmrc` auth token in CI workflow (setup-node `.npmrc` generation was not passing token correctly)
+
 ## [0.4.1] — 2026-08-23
 
 ### Added
