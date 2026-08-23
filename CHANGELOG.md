@@ -2,6 +2,15 @@
 
 All notable changes to this project are documented here. Format: Keep a Changelog; versioning: SemVer.
 
+## [0.4.6] — 2026-08-23
+
+### Added
+- Publish to GitHub Packages (`npm.pkg.github.com`) — visible on repo's Packages tab
+- Docker build fix: corepack fallback for `node:25-slim` images
+
+### Changed
+- README updated with scoped npm name `@aryaminus/socials-mcp` and package links
+
 ## [0.4.5] — 2026-08-23
 
 ### Fixed
