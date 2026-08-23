@@ -53,6 +53,9 @@ STEP 3 — Install the 6 skills so you can use them:
    Confirm which of the six are active before moving on.
 
 STEP 4 — Connect my platforms (inside this chat):
+   PRE-FLIGHT: if we deployed to cloud (Method A), before any consent link, tell me to verify each
+   platform app has its authorized redirect URI registered: <MY_MCP_ORIGIN>/callback and
+   /oauth/<platform>/done for youtube/meta/tiktok (the /setup page lists exact values).
    For each: YouTube (Google OAuth), Instagram + Facebook (Meta), TikTok:
    1. Ask me for credentials if the /setup checklist showed them missing — onboarding guides:
       https://github.com/aryaminus/socials-assistant/blob/main/docs/onboarding-google.md
@@ -60,6 +63,9 @@ STEP 4 — Connect my platforms (inside this chat):
       https://github.com/aryaminus/socials-assistant/blob/main/docs/onboarding-tiktok.md
    2. Call connect_youtube / connect_meta / connect_tiktok — show me the consent URL, wait for my approval
    3. Confirm ok:true via connection_status
+   If any step fails with redirect_uri_mismatch or invalid_redirect_uri: give me the exact URI to add
+   in that platform's developer console (<MY_MCP_ORIGIN>/oauth/<platform>/done), have me save it,
+   then retry the connect call.
    Note: TikTok developer-app approval takes days — start that application FIRST if I use TikTok.
 
 STEP 5 — First data run:

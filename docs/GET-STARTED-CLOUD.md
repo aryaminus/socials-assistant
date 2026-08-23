@@ -26,10 +26,12 @@ Visit `https://your-worker.workers.dev/setup`. It's a live checklist showing exa
 
 | What | Where the values come from |
 |---|---|
-| MCP sign-in (Google OAuth client) | docs/onboarding-google.md ~10 min, one client covers sign-in AND YouTube data |
+| MCP sign-in (Google OAuth client) | docs/onboarding-google.md ~10 min — **Web application** type; add `<your-worker>/callback` as authorized redirect |
 | Encryption key | any `openssl rand -hex 32` output |
-| Meta app | docs/onboarding-meta.md |
-| TikTok app | docs/onboarding-tiktok.md (approval takes days — do it first) |
+| Meta app | docs/onboarding-meta.md — also add redirect URI `<your-worker>/oauth/meta/done` |
+| TikTok app | docs/onboarding-tiktok.md (approval takes days — do it first) — add redirect URI `<your-worker>/oauth/tiktok/done` |
+
+The `/setup` page lists every redirect URI with your real origin — copy them into each platform app exactly.
 
 Each platform you skip simply stays unconnected; everything else works.
 

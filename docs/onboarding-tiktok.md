@@ -21,7 +21,9 @@ TikTok does not expose Studio-only fields through ANY official API. The CSV impo
 ## 2. Add Login Kit with the right scopes
 
 1. Add product → **Login Kit**.
-2. Redirect URI: `http://127.0.0.1:8399/callback`
+2. Redirect URI — add both if you might use either mode:
+   - Local server: `http://127.0.0.1:8399/callback`
+   - Cloud worker (if deploying to Cloudflare): `https://<your-worker>.workers.dev/oauth/tiktok/done`
 3. Scopes: enable `user.info.basic`, `user.info.stats`, `video.list`.
 4. Submit for review (approval commonly takes 2–7 days). Meanwhile, the app owner's own account can authorize in sandbox/dev mode.
 

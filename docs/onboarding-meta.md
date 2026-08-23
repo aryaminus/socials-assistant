@@ -16,7 +16,9 @@ One Meta developer app covers both platforms via the official Graph API. The sin
 ## 2. Add products
 
 1. Dashboard → Add product → **Facebook Login** → Set up → Web.
-2. **Valid OAuth Redirect URIs**: `http://127.0.0.1:8399/callback` → Save.
+2. **Valid OAuth Redirect URIs**: add BOTH of these, then Save:
+   - Local server: `http://127.0.0.1:8399/callback`
+   - Cloud worker (if deploying to Cloudflare): `https://<your-worker>.workers.dev/oauth/meta/done`
 3. Add product → **Instagram Graph API** (automatic for Business apps).
 
 No App Review needed yet: while your app is in **Development mode**, the roles listed under Roles (you, admins, testers) can grant all these permissions. App Review is only needed if OTHER creators use YOUR app id (the cloud worker's multi-tenant mode).

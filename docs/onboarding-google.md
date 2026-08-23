@@ -24,9 +24,19 @@ The YouTube connector uses Google's own free APIs with **your** OAuth consent: Y
 
 ## 4. Create OAuth client
 
+Pick based on where your MCP server runs:
+
+**Local (default):**
 1. APIs & Services → **Credentials** → Create credentials → **OAuth client ID**.
 2. Application type: **Desktop app** (the local server handles the loopback redirect automatically — no need to type redirect URIs).
 3. Copy the **Client ID** and **Client secret**.
+
+**Cloud (Cloudflare Worker):**
+1. Same flow, but Application type: **Web application**.
+2. Under **Authorized redirect URIs**, add BOTH:
+   - `https://<your-worker>.workers.dev/callback` — used by the MCP sign-in
+   - `https://<your-worker>.workers.dev/oauth/youtube/done` — used when connecting YouTube data
+3. Copy the Client ID and Client secret into the Worker's dashboard Variables (`GOOGLE_LOGIN_CLIENT_ID/SECRET`, and reuse for `SOCIALS_GOOGLE_CLIENT_ID/SECRET`).
 
 ## 5. Store credentials
 

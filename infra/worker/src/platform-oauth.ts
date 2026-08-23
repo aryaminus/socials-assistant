@@ -230,6 +230,17 @@ h1{font-size:1.5rem}.step{margin:24px 0;padding:16px;border:1px solid #e4e4e7;bo
 <table><tr><th>Name(s)</th><th>Purpose</th><th>Status</th></tr>${list}</table>
 <p>Generate an encryption key: <code>openssl rand -hex 32</code> — or any 64-char hex string.</p></div>
 
+<div class="step"><h3>1b · Register redirect URIs in each platform app</h3>
+<p>This deployment builds consent links that return to <b>this URL</b>. Add these exact values to each platform's developer app (local installs use <code>http://127.0.0.1:8399/callback</code> instead — see docs/onboarding-*).</p>
+<table>
+<tr><th>Platform app</th><th>Add this authorized redirect URI</th></tr>
+<tr><td>Google client used for <b>MCP sign-in</b> (must be type <b>Web application</b>)</td><td><code>${origin}/callback</code></td></tr>
+<tr><td>Google client for <b>YouTube data</b> (same client is fine)</td><td><code>${origin}/oauth/youtube/done</code></td></tr>
+<tr><td>Meta app → Facebook Login → Valid OAuth Redirect URIs</td><td><code>${origin}/oauth/meta/done</code></td></tr>
+<tr><td>TikTok app → Login Kit → Redirect URI</td><td><code>${origin}/oauth/tiktok/done</code></td></tr>
+</table>
+<p>If a consent screen ever says <i>redirect_uri_mismatch</i>, that platform's URI above is missing or differs byte-for-byte.</p></div>
+
 <div class="step"><h3>2 · Your MCP URL (paste into any agent)</h3>
 <div class="url">${origin}/mcp</div>
 <p>Claude.ai/web: <b>Settings → Connectors → Add custom connector</b> → paste the URL.<br>

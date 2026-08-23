@@ -39,9 +39,11 @@ Secrets you don't set keep that platform unconnected; everything else works.
 ## Post-deploy checklist
 
 1. Visit `https://your-worker.workers.dev/setup` — live checklist of which vars are set
-2. Paste `https://your-worker.workers.dev/mcp` into claude.ai as a custom connector
-3. Upload skill bundles from [Releases](https://github.com/aryaminus/socials-assistant/releases/latest) (or fetch from `/skills`)
-4. Connect platforms inside the chat
+2. Register redirect URIs in each platform app (`/setup` lists them with your real origin):
+   Google client → `<origin>/callback` + `<origin>/oauth/youtube/done`; Meta → `<origin>/oauth/meta/done`; TikTok → `<origin>/oauth/tiktok/done`
+3. Paste `https://your-worker.workers.dev/mcp` into claude.ai as a custom connector
+4. Upload skill bundles from [Releases](https://github.com/aryaminus/socials-assistant/releases/latest) or run `npx skills add aryaminus/socials-assistant`
+5. Connect platforms inside the chat
 
 ## How it works
 
