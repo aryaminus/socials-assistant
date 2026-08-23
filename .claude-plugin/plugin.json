@@ -1,0 +1,12 @@
+{
+  "name": "socials-assistant",
+  "version": "0.2.0",
+  "description": "Creator analytics vault + outreach skills for AI agents. Official APIs only (YouTube, Instagram, Facebook, TikTok), permanent local history, draft-first brand outreach.",
+  "author": {
+    "name": "aryaminus"
+  },
+  "homepage": "https://github.com/aryaminus/socials-assistant",
+  "repository": "https://github.com/aryaminus/socials-assistant",
+  "license": "MIT",
+  "keywords": ["social-media", "analytics", "creator", "mcp", "tiktok", "youtube", "instagram", "outreach"]
+}

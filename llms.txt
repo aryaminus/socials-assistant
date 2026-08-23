@@ -1,0 +1,37 @@
+# Socials Assistant
+
+> Open-source creator analytics vault + MCP server + agent skills. Official APIs only, permanent local history, draft-first outreach.
+
+## What it does
+
+Pulls a creator's OWN TikTok, Instagram, Facebook, and YouTube analytics into a
+local SQLite vault the platforms can't expire, then reads it: weekly digests,
+top-content analysis, audience demographics, media kits, and brand-pitch drafts
+backed by verified numbers. No scraping, no ToS risk — official APIs plus
+TikTok Studio CSV imports for Studio-only data (retention, traffic sources).
+
+## Quick start
+
+```bash
+git clone https://github.com/aryaminus/socials-assistant && cd socials-assistant
+pnpm install && pnpm build          # or: ./setup.sh
+node apps/mcp/bin/socials-mcp.js onboard
+```
+
+Then add the MCP server to any agent (config snippets in `agents/README.md`):
+Claude Code, Claude Desktop, Codex, Gemini CLI, opencode, Cursor — locally via
+stdio/HTTP, or deploy `infra/worker` to Cloudflare for a single remote URL.
+
+## Key files
+
+- `apps/mcp/` — socials-mcp server (15 tools, stdio + streamable HTTP) + CLI
+- `packages/vault/` — SQLite vault, TikTok Studio CSV importer, analytics queries
+- `packages/connectors/` — YouTube / Meta / TikTok official-API connectors
+- `skills/` — socials-connect, weekly-digest, brand-outreach, media-kit
+- `infra/worker/` — Cloudflare Workers remote MCP (OAuth 2.1, multi-tenant)
+- `docs/` — per-platform onboarding, hosting, automation, deliverability
+
+## Full docs
+
+See `AGENTS.md` for all install methods, env vars, and operations.
+See `README.md` for the project overview and capability map.

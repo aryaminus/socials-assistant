@@ -11,7 +11,7 @@ import {
 } from "@socials/connectors";
 import { isPlatform, type NormalizedSnapshot, type Platform } from "@socials/shared";
 
-export const VERSION = "0.1.0";
+export const VERSION = "0.2.0";
 
 // ---------------------------------------------------------------------------
 // config file (env vars win over file)
@@ -85,6 +85,11 @@ export function buildServer(vault: Vault): McpServer {
   );
 
   const text = (t: unknown) => ({ content: [{ type: "text" as const, text: typeof t === "string" ? t : JSON.stringify(t, null, 2) }] });
+  /** Error-channel results: actionable, self-correcting (isError per MCP guidance). */
+  const err = (payload: Record<string, unknown>) => ({
+    content: [{ type: "text" as const, text: JSON.stringify(payload, null, 2) }],
+    isError: true as const,
+  });
 
   // ------------------- connection tools -------------------
 
@@ -104,7 +109,7 @@ export function buildServer(vault: Vault): McpServer {
     async () => {
       const cfg = mergedConfig();
       if (!cfg.googleClientId || !cfg.googleClientSecret) {
-        return text({
+        return err({
           error: "missing_app_credentials",
           fix: "Create a free Google Cloud OAuth client (docs/onboarding-google.md), then:\n  socials-mcp config set googleClientId <id>\n  socials-mcp config set googleClientSecret <secret>",
         });
@@ -133,7 +138,7 @@ export function buildServer(vault: Vault): McpServer {
     async () => {
       const cfg = mergedConfig();
       if (!cfg.metaAppId || !cfg.metaAppSecret) {
-        return text({
+        return err({
           error: "missing_app_credentials",
           fix: "Create a free Meta developer app (docs/onboarding-meta.md), then:\n  socials-mcp config set metaAppId <id>\n  socials-mcp config set metaAppSecret <secret>",
         });
@@ -167,7 +172,7 @@ export function buildServer(vault: Vault): McpServer {
     async () => {
       const cfg = mergedConfig();
       if (!cfg.tiktokClientKey || !cfg.tiktokClientSecret) {
-        return text({
+        return err({
           error: "missing_app_credentials",
           fix: "Create a free TikTok developer app with Login Kit (user.info.basic, user.info.stats, video.list) — docs/onboarding-tiktok.md — then:\n  socials-mcp config set tiktokClientKey <key>\n  socials-mcp config set tiktokClientSecret <secret>",
         });
@@ -205,7 +210,7 @@ export function buildServer(vault: Vault): McpServer {
       const results: Record<string, unknown> = {};
       const accounts = vault.listAccounts();
       if (accounts.length === 0) {
-        return text({ error: "no_accounts", fix: "Connect a platform first (connect_youtube / connect_meta / connect_tiktok), or import_tiktok_csv for Studio exports." });
+        return err({ error: "no_accounts", fix: "Connect a platform first (connect_youtube / connect_meta / connect_tiktok), or import_tiktok_csv for Studio exports." });
       }
       for (const acct of accounts) {
         try {
@@ -264,12 +269,12 @@ export function buildServer(vault: Vault): McpServer {
     "Import a TikTok Studio CSV export (video stats / follower / profile views). This is the ONLY compliant source of retention, watch time, reach, and traffic data for TikTok — export weekly from TikTok Studio → Analytics, then point this tool at the file.",
     { path: z.string().describe("Absolute path to the exported CSV file") },
     async ({ path }) => {
-      if (!existsSync(path)) return text({ error: "file_not_found", path });
+      if (!existsSync(path)) return err({ error: "file_not_found", fix: "Check the absolute path to the TikTok Studio export.", path });
       let result;
       try {
         result = importTiktokCsv(path, { fromFile: true });
       } catch (e) {
-        return text({ error: "parse_failed", message: (e as Error).message });
+        return err({ error: "parse_failed", fix: "Ensure this is a TikTok Studio CSV export (video stats / follower / profile).", message: (e as Error).message });
       }
       const existing = vault.findAccount("tiktok");
       const accountId = existing
@@ -298,9 +303,12 @@ export function buildServer(vault: Vault): McpServer {
     async ({ sql }) => {
       try {
         const rows = vaultQuery(vault, sql);
+        if (rows.length > 500) {
+          return text({ rows: rows.slice(0, 500), count: 500, total: rows.length, truncated: true, fix: "Narrow with WHERE/LIMIT — results are capped to protect agent context." });
+        }
         return text({ rows, count: rows.length });
       } catch (e) {
-        return text({ error: (e as Error).message });
+        return err({ error: (e as Error).message, fix: "vault_query accepts a single read-only SELECT against vault tables (accounts, snapshots, account_metrics, videos, video_metrics, audience, csv_imports, outreach_log)." });
       }
     }
   );
@@ -385,7 +393,7 @@ export function buildServer(vault: Vault): McpServer {
     },
     async ({ id, status, notes, thread_ref }) => {
       const cur = vault.db.prepare("SELECT id FROM outreach_log WHERE id = ?").get(id);
-      if (!cur) return text({ error: "not_found", id });
+      if (!cur) return err({ error: "not_found", fix: "List first with outreach_log_list to find the id.", id });
       vault.db
         .prepare(
           `UPDATE outreach_log SET

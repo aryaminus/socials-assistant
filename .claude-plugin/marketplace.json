@@ -1,0 +1,23 @@
+{
+  "name": "socials-assistant",
+  "owner": {
+    "name": "aryaminus",
+    "url": "https://github.com/aryaminus"
+  },
+  "metadata": {
+    "description": "Marketplace hosting the socials-assistant plugin (skills + MCP setup)."
+  },
+  "plugins": [
+    {
+      "name": "socials-assistant",
+      "description": "Creator analytics vault + outreach skills. Official APIs only, permanent local history, draft-first outreach.",
+      "version": "0.2.0",
+      "author": {
+        "name": "aryaminus"
+      },
+      "source": "./",
+      "category": "productivity",
+      "homepage": "https://github.com/aryaminus/socials-assistant"
+    }
+  ]
+}

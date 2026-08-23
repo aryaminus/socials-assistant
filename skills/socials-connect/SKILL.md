@@ -1,42 +1,44 @@
 ---
 name: socials-connect
-description: Connect the creator's TikTok, Instagram, Facebook, and YouTube accounts to the socials-assistant vault. Use when the user wants to connect/link/add social accounts, fix broken connections, or set up the vault for the first time.
+description: Connects a creator's TikTok, Instagram, Facebook, and YouTube accounts to the socials-assistant analytics vault via official OAuth. Use when the user wants to connect, link, or add social accounts, set up the vault for the first time, fix broken or expired connections, or store platform developer-app credentials.
+license: MIT
 ---
 
 # socials-connect — guided onboarding
 
-Goal: get all of the creator's platforms connected to the `socials-mcp` vault with official OAuth flows, plus weekly TikTok Studio CSV imports for Studio-only data.
+Goal: all of the user's platforms connected to the `socials-mcp` vault through official OAuth flows, plus the weekly TikTok Studio CSV habit for Studio-only data. The agent drives every step; the human only approves browser consent screens.
 
 ## Prerequisites check
 
-1. Call `connection_status`. If any platform is already connected and `ok: true`, skip it.
-2. If connect tools return `missing_app_credentials`, walk the user through the matching guide:
+1. Call `socials-mcp:connection_status`. Skip any platform already `ok: true`.
+2. If a connect tool returns `missing_app_credentials`, walk the user through the matching guide (repo `docs/`):
    - YouTube → `docs/onboarding-google.md` (Google Cloud project, 3 APIs, OAuth desktop client)
-   - Instagram + Facebook → `docs/onboarding-meta.md` (Meta app; requires IG Business/Creator account linked to a FB Page)
-   - TikTok → `docs/onboarding-tiktok.md` (TikTok developer app, Login Kit scopes: user.info.basic, user.info.stats, video.list)
-3. Have them store credentials:
-   `socials-mcp config set googleClientId <id>` (etc.) — or env vars SOCIALS_GOOGLE_CLIENT_ID etc.
+   - Instagram + Facebook → `docs/onboarding-meta.md` (Meta app; IG Business/Creator account linked to a FB Page)
+   - TikTok → `docs/onboarding-tiktok.md` (TikTok developer app, Login Kit scopes)
+3. Have them store credentials (they paste; never ask them to email or DM secrets):
+   `socials-mcp config set googleClientId <id>` — or env vars (see AGENTS.md).
 
 ## Connect flow (per platform)
 
-1. Tell the user: "I'll open a consent screen in your browser; approve it and come back."
-2. Call `connect_youtube` / `connect_meta` / `connect_tiktok`. The consent URL prints to the MCP server log; the tool replies immediately — either ✅ done or ⏳ pending.
-3. After the user finishes in the browser, call `connection_status` to confirm `ok: true`.
-4. Repeat for the next platform. `connect_meta` connects Instagram AND Facebook in one flow.
+1. Tell the user: "A consent screen will open — approve it and come back."
+2. Call `socials-mcp:connect_youtube` / `socials-mcp:connect_meta` / `socials-mcp:connect_tiktok`. Each replies immediately: ✅ done, or ⏳ pending with the consent URL in the server log.
+3. After they finish in the browser, call `socials-mcp:connection_status` to confirm `ok: true`.
+4. `connect_meta` connects Instagram AND Facebook in one flow.
 
 ## First data pull
 
-1. Call `snapshot` (default 28-day lookback). Report per-platform row counts.
-2. For TikTok depth, tell the user: "TikTok Studio → Analytics → export video stats CSV (last 7 days)" and get the file path, then call `import_tiktok_csv` with it. Explain WHY: retention curves, traffic sources, search terms, and follower-hours are Studio-only — no official API exposes them; CSV is the compliant path.
-3. Verify data landed: `top_content` with `days: 7`.
+1. Call `socials-mcp:snapshot` (default 28-day lookback). Report per-platform row counts.
+2. For TikTok depth: ask for their weekly TikTok Studio export (Studio → Analytics → export video-stats CSV), then call `socials-mcp:import_tiktok_csv` with the path. Explain why: retention, traffic sources, search terms, and follower-hours are Studio-only — no official API exposes them; CSV is the compliant path.
+3. Verify with `socials-mcp:top_content` (`days: 7`).
 
-## Weekly rhythm to set up
+## Weekly rhythm to establish
 
-- `snapshot` once a week (history accrues forever in the vault)
-- `import_tiktok_csv` with the fresh Studio export (≈5 min/week)
-- The `weekly-digest` skill does the reading
+- `socials-mcp:snapshot` once a week — history accrues forever in the vault
+- `socials-mcp:import_tiktok_csv` with the fresh Studio export (≈5 min/week)
+- The `weekly-digest` skill reads it all
 
-## Rules
+## Gotchas
 
-- Never ask for passwords or to automate the TikTok logged-in session (ToS + ban risk).
-- If a token expired, prefer re-running the connect tool (refresh tokens usually self-renew via snapshot).
+- Never ask for passwords; never automate the logged-in TikTok Studio session (ToS + account risk).
+- Expired tokens usually self-heal on the next `snapshot` (auto-refresh); if not, re-run the connect tool.
+- TikTok app review can take days — the app owner's own account works immediately.

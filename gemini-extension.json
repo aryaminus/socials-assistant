@@ -1,0 +1,13 @@
+{
+  "name": "socials-assistant-skill",
+  "version": "0.2.0",
+  "description": "Creator analytics vault + outreach skills. Pull your own TikTok/Instagram/Facebook/YouTube analytics into a permanent history vault and draft brand outreach from verified numbers.",
+  "settings": [
+    {
+      "name": "Vault Directory",
+      "description": "Where the SQLite vault and config live",
+      "envVar": "SOCIALS_DATA_DIR",
+      "sensitive": false
+    }
+  ]
+}

@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { buildServer, openVault, configFilePath, readConfigFile, writeConfigValue, VERSION } from "./server.js";
 import { runHttpServer } from "./http.js";
@@ -8,6 +9,8 @@ socials-mcp v${VERSION} — creator analytics MCP server (socials-assistant)
 Usage:
   socials-mcp                 Start MCP server on stdio (for agents' stdio config)
   socials-mcp --http [port]   Start MCP server via streamable HTTP (default 3344)
+  socials-mcp --version       Print version
+  socials-mcp doctor          Environment + config + vault health check with fix hints
   socials-mcp onboard         Print guided onboarding (platform apps + OAuth)
   socials-mcp config set K V  Store a config value (persisted, see path below)
   socials-mcp config get [K]  Read config values (secrets redacted)
@@ -25,9 +28,18 @@ async function main(): Promise<void> {
   const args = process.argv.slice(2);
   const cmd = args[0] ?? "";
 
+  if (cmd === "--version" || cmd === "-v" || cmd === "version") {
+    process.stdout.write(VERSION + "\n");
+    return;
+  }
+
   if (cmd === "--help" || cmd === "-h" || cmd === "help") {
     process.stdout.write(HELP);
     return;
+  }
+
+  if (cmd === "doctor") {
+    process.exit(runDoctor());
   }
 
   if (cmd === "onboard") {
@@ -85,7 +97,8 @@ async function main(): Promise<void> {
 
   if (cmd === "--http") {
     const portIdx = args.indexOf("--port");
-    const port = portIdx !== -1 ? Number(args[portIdx + 1]) : Number(process.env.SOCIALS_MCP_PORT ?? 3344);
+    const positional = Number(args[1]);
+    const port = portIdx !== -1 ? Number(args[portIdx + 1]) : Number.isFinite(positional) && positional > 0 ? positional : Number(process.env.SOCIALS_MCP_PORT ?? 3344);
     await runHttpServer(port);
     return; // runHttpServer keeps the process alive
   }
@@ -138,6 +151,58 @@ Then, in your agent:
 Optional: docs/automation.md (weekly email digest), docs/hosting-cloudflare.md
 (multi-tenant remote MCP for other creators).
 `;
+
+
+/** Health check with fix hints — used by setup.sh, CI, and confused humans. */
+function runDoctor(): number {
+  const lines: Array<[string, string, string]> = []; // [status, check, detail]
+  const ok = (c: string, d = "") => lines.push(["✓", c, d]);
+  const warn = (c: string, d: string) => lines.push(["!", c, d]);
+  const fail = (c: string, d: string) => lines.push(["✗", c, d]);
+  let fatal = 0;
+
+  const [major, minor] = process.versions.node.split(".").map(Number);
+  if (major > 22 || (major === 22 && minor >= 5)) ok(`Node ${process.versions.node} (>=22.5 for node:sqlite)`);
+  else { fail(`Node ${process.versions.node}`, "Install Node >= 22.5 (node:sqlite is built in)"); fatal++; }
+
+  if (existsSync(new URL("../dist/server.js", import.meta.url))) ok("Build present (apps/mcp/dist)");
+  else { fail("Build missing", "Run: pnpm build (from repo root)"); fatal++; }
+
+  const cfg = readConfigFile();
+  const keys: Array<[string, string]> = [
+    ["googleClientId", "YouTube"], ["googleClientSecret", "YouTube"],
+    ["metaAppId", "Instagram+FB"], ["metaAppSecret", "Instagram+FB"],
+    ["tiktokClientKey", "TikTok"], ["tiktokClientSecret", "TikTok"],
+  ];
+  const envAlias: Record<string, string | undefined> = {
+    googleClientId: process.env.SOCIALS_GOOGLE_CLIENT_ID, googleClientSecret: process.env.SOCIALS_GOOGLE_CLIENT_SECRET,
+    metaAppId: process.env.SOCIALS_META_APP_ID, metaAppSecret: process.env.SOCIALS_META_APP_SECRET,
+    tiktokClientKey: process.env.SOCIALS_TIKTOK_CLIENT_KEY, tiktokClientSecret: process.env.SOCIALS_TIKTOK_CLIENT_SECRET,
+  };
+  for (const [key, platform] of keys) {
+    if (cfg[key] || envAlias[key]) ok(`${platform} app credentials (${key})`);
+    else warn(`${platform} app credentials (${key})`, "Unset — see docs/onboarding-*.md; skip platforms you don't use");
+  }
+
+  try {
+    const vault = openVault();
+    const accounts = vault.listAccounts();
+    if (accounts.length) {
+      ok(`Vault: ${accounts.length} account(s)`, accounts.map((a: { platform: string; handle: string | null }) => `${a.platform}${a.handle ? "(@" + a.handle + ")" : ""}`).join(", "));
+      ok(`Vault history since`, vault.firstSnapshotDate() ?? "no snapshots yet");
+    } else {
+      warn("Vault empty", "No platforms connected yet — run `onboard`, then connect_* in your agent");
+    }
+    vault.close();
+  } catch (e) {
+    fail("Vault open failed", (e as Error).message); fatal++;
+  }
+
+  for (const l of lines) console.log(`${l[0]} ${l[1]}${l[2] ? " — " + l[2] : ""}`);
+  if (fatal) { console.error(`\n${fatal} fatal issue(s). Fix the ✗ lines above.`); return 1; }
+  console.log("\nDoctor: no fatal issues." + (lines.some((l) => l[0] === "!") ? " (! lines are optional platforms.)" : ""));
+  return 0;
+}
 
 main().catch((e) => {
   console.error("[socials-mcp] fatal:", e);

@@ -21,6 +21,11 @@ jobs:
         run: pnpm exec tsc -b packages/shared packages/vault packages/connectors apps/mcp
       - name: Tests
         run: npx tsx --test packages/shared/test/*.test.ts packages/vault/test/*.test.ts
-      - name: MCP stdio smoke
+      - name: MCP contract audit
+        run: npx tsx scripts/audit-mcp.ts
+      - name: Skills spec lint
+        run: npx tsx scripts/lint-skills.ts
+      - name: Doctor + MCP stdio smoke
         run: |
+          node apps/mcp/bin/socials-mcp.js doctor
           printf '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"ci","version":"0"}}}\n{"jsonrpc":"2.0","method":"notifications/initialized"}\n{"jsonrpc":"2.0","id":2,"method":"tools/list"}\n' | SOCIALS_DATA_DIR=/tmp/socials-ci node apps/mcp/bin/socials-mcp.js | grep -q '"tools":'

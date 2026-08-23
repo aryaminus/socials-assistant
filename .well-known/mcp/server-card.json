@@ -1,0 +1,31 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server-card.schema.json",
+  "experimental-ext-server-card": true,
+  "version": "0.2.0",
+  "name": "socials-assistant",
+  "description": "Creator analytics vault. Pull your own TikTok/Instagram/Facebook/YouTube analytics into a permanent history vault, digest weekly performance, draft brand outreach from verified numbers.",
+  "url": "https://socials-mcp.YOURDOMAIN.workers.dev/mcp",
+  "icon": "https://github.com/aryaminus/socials-assistant/raw/main/docs/icon.svg",
+  "servers": [
+    {
+      "transport": "streamable-http",
+      "url": "https://socials-mcp.YOURDOMAIN.workers.dev/mcp",
+      "auth": "oauth-2.1"
+    }
+  ],
+  "capabilities": ["tools"],
+  "installation": {
+    "local": {
+      "command": "node",
+      "args": ["apps/mcp/bin/socials-mcp.js"],
+      "runtime": "node>=22.5"
+    }
+  },
+  "links": {
+    "homepage": "https://github.com/aryaminus/socials-assistant",
+    "documentation": "https://github.com/aryaminus/socials-assistant/tree/main/docs",
+    "issues": "https://github.com/aryaminus/socials-assistant/issues"
+  },
+  "license": "MIT",
+  "note": "Deploy your own Worker (infra/worker) and replace the URL above — this project is self-hosted by design; creator platform tokens never leave the creator's control."
+}

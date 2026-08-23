@@ -1,0 +1,21 @@
+services:
+  socials-mcp:
+    build: .
+    ports:
+      - "3344:3344"
+    environment:
+      # Set a token before exposing beyond localhost
+      SOCIALS_MCP_TOKEN: ${SOCIALS_MCP_TOKEN:-}
+      # Optional: platform app creds (or `docker exec` config set instead)
+      SOCIALS_GOOGLE_CLIENT_ID: ${SOCIALS_GOOGLE_CLIENT_ID:-}
+      SOCIALS_GOOGLE_CLIENT_SECRET: ${SOCIALS_GOOGLE_CLIENT_SECRET:-}
+      SOCIALS_META_APP_ID: ${SOCIALS_META_APP_ID:-}
+      SOCIALS_META_APP_SECRET: ${SOCIALS_META_APP_SECRET:-}
+      SOCIALS_TIKTOK_CLIENT_KEY: ${SOCIALS_TIKTOK_CLIENT_KEY:-}
+      SOCIALS_TIKTOK_CLIENT_SECRET: ${SOCIALS_TIKTOK_CLIENT_SECRET:-}
+    volumes:
+      - socials-vault:/data
+    restart: unless-stopped
+
+volumes:
+  socials-vault:

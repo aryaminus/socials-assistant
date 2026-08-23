@@ -1,0 +1,10 @@
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    properties: {}
+  commandFunction: |-
+    () => ({
+      command: "node",
+      args: ["apps/mcp/bin/socials-mcp.js"]
+    })

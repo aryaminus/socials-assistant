@@ -1,7 +1,7 @@
 {
   "name": "socials-mcp",
-  "version": "0.1.0",
-  "description": "Creator analytics MCP server — TikTok/Instagram/Facebook/YouTube vault, weekly digests, and brand-outreach support. Local SQLite vault, official APIs only.",
+  "version": "0.2.0",
+  "description": "Creator analytics MCP server \u2014 TikTok/Instagram/Facebook/YouTube vault, weekly digests, and brand-outreach support. Local SQLite vault, official APIs only.",
   "license": "MIT",
   "type": "module",
   "bin": {
@@ -10,7 +10,10 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
-    ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" }
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
   },
   "scripts": {
     "build": "tsc -b"
@@ -21,5 +24,24 @@
     "@socials/vault": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.12.0",
     "zod": "^3.24.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aryaminus/socials-assistant.git"
+  },
+  "bugs": {
+    "url": "https://github.com/aryaminus/socials-assistant/issues"
+  },
+  "keywords": [
+    "mcp",
+    "social-media",
+    "analytics",
+    "creator",
+    "tiktok",
+    "youtube",
+    "instagram",
+    "facebook",
+    "outreach",
+    "model-context-protocol"
+  ]
 }

@@ -1,0 +1,20 @@
+{
+  "name": "socials-assistant",
+  "interface": {
+    "displayName": "Socials Assistant"
+  },
+  "plugins": [
+    {
+      "name": "socials-assistant",
+      "source": {
+        "source": "local",
+        "path": "./"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
