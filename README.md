@@ -6,6 +6,10 @@ Open-source analytics vault + MCP server + agent skills for creators. Pull your 
 
 ## Quickstart
 
+**One-prompt setup** (paste into any agent — Claude, ChatGPT, Gemini, Codex, Cursor, DeepSeek, Qwen, Pi, or any MCP-compatible agent):
+
+> See [docs/SETUP-PROMPT.md](docs/SETUP-PROMPT.md) — copy the prompt block and paste it into your agent. It handles everything from Cloudflare deploy to platform connection.
+
 **Cloud (zero install):** [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/aryaminus/socials-assistant) → follow [docs/GET-STARTED-CLOUD.md](docs/GET-STARTED-CLOUD.md)
 
 **Local:**
@@ -38,6 +42,19 @@ Skills: digest · outreach · media-kit · script-review · publish-package
 - **History vault** — platforms expire analytics; this doesn't
 - **Draft-first outreach** — real numbers, no auto-send
 
+## Connect your agent
+
+| Agent | Method |
+|-------|--------|
+| Claude (claude.ai) | Settings → Connectors → Add custom connector → paste MCP URL |
+| Claude Desktop | Add to `claude_desktop_config.json` — see [agents/README.md](agents/README.md) |
+| Claude Code | `claude mcp add --transport http socials https://your-worker.workers.dev/mcp` |
+| Codex | `[mcp_servers.socials] url = "…"` + `codex mcp login socials` |
+| Cursor | Settings → MCP Servers → Add → paste MCP URL |
+| Gemini CLI | Add MCP block to `~/.gemini/settings.json` |
+| ChatGPT | Deploy the Worker → add as custom connector |
+| Any MCP-compatible agent | See [agents/README.md](agents/README.md) |
+
 ## Capabilities & limits
 
 Full capability map, derived analyses, and honest data-availability table: [docs/CAPABILITIES.md](docs/CAPABILITIES.md)
@@ -50,14 +67,11 @@ Full capability map, derived analyses, and honest data-availability table: [docs
 | Docker / VPS | `docker compose up --build` |
 | Local | `./setup.sh` |
 
-## Agent configs
-
-Copy-paste MCP config for Claude Code, Claude Desktop, Codex, Gemini CLI, opencode, Cursor: [agents/README.md](agents/README.md)
-
 ## Docs
 
 | Doc | What |
 |-----|------|
+| [docs/SETUP-PROMPT.md](docs/SETUP-PROMPT.md) | **One-prompt setup** — paste into any agent |
 | [docs/GET-STARTED-CLOUD.md](docs/GET-STARTED-CLOUD.md) | Zero-install cloud journey |
 | [docs/hosting-cloudflare.md](docs/hosting-cloudflare.md) | Cloudflare deploy guide |
 | [docs/CAPABILITIES.md](docs/CAPABILITIES.md) | Full capability map |

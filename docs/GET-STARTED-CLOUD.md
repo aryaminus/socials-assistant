@@ -1,15 +1,15 @@
-# Zero-install setup — your MCP in the cloud, used from claude.ai
+# Zero-install setup — your MCP in the cloud
 
 No local installation. No terminal required (one optional command). Total time: ~20 minutes, mostly waiting for platform app approvals.
 
 ## The journey
 
 ```
-① Deploy button → ② /setup checklist → ③ paste URL into claude.ai →
-④ upload skills → ⑤ connect platforms inside the chat → done
+Deploy button → /setup checklist → paste MCP URL into your agent →
+upload skills → connect platforms inside the chat → done
 ```
 
-### ① Deploy your own instance (one click)
+### 1. Deploy your own instance (one click)
 
 Click the **Deploy to Cloudflare** button on the repo README (or open
 `https://deploy.workers.cloudflare.com/?url=https://github.com/aryaminus/socials-assistant`).
@@ -20,36 +20,41 @@ Cloudflare clones the repo, provisions the Worker + D1 vault + KV namespace, and
 Create them manually: <code>npx wrangler d1 create socials-vault</code>, <code>npx wrangler kv namespace create OAUTH_KV</code>, paste IDs into <code>wrangler.jsonc</code>, redeploy. Full manual path: <a href="../infra/worker/README.md">infra/worker/README.md</a>.
 </details>
 
-### ② Finish configuration at `/setup`
+### 2. Finish configuration at `/setup`
 
 Visit `https://your-worker.workers.dev/setup`. It's a live checklist showing exactly which variables/secrets are set. Set them in the Cloudflare dashboard (**Workers → your worker → Settings → Variables**) — encrypt anything secret:
 
 | What | Where the values come from |
 |---|---|
-| MCP sign-in (Google OAuth client) | docs/onboarding-google.md §3–4 (~10 min, one client covers sign-in AND YouTube data) |
+| MCP sign-in (Google OAuth client) | docs/onboarding-google.md ~10 min, one client covers sign-in AND YouTube data |
 | Encryption key | any `openssl rand -hex 32` output |
 | Meta app | docs/onboarding-meta.md |
 | TikTok app | docs/onboarding-tiktok.md (approval takes days — do it first) |
 
 Each platform you skip simply stays unconnected; everything else works.
 
-### ③ Connect claude.ai
+### 3. Connect your agent
 
-Claude.ai → **Settings → Connectors → Add custom connector** → paste:
+Paste your MCP URL (`https://your-worker.workers.dev/mcp`) into your agent's MCP connector settings. Here's how for each agent:
 
-```
-https://your-worker.workers.dev/mcp
-```
+| Agent | How to connect |
+|-------|---------------|
+| Claude (claude.ai) | Settings → Connectors → Add custom connector → paste URL |
+| Claude Desktop | Add to `claude_desktop_config.json` — see [agents/README.md](../agents/README.md) |
+| Claude Code | `claude mcp add --transport http socials https://your-worker.workers.dev/mcp` |
+| Codex | `[mcp_servers.socials] url = "…"` + `codex mcp login socials` |
+| Cursor | Settings → MCP Servers → Add → paste URL |
+| Gemini CLI | Add MCP block to `~/.gemini/settings.json` |
+| ChatGPT | Deploy the Worker → add as custom connector (Business/Enterprise) |
+| Any MCP-compatible agent | See [agents/README.md](../agents/README.md) for agent-specific configs |
 
-Sign in with Google when prompted (that's the MCP-level auth). Claude Code users: `claude mcp add --transport http socials https://your-worker.workers.dev/mcp`. Codex: `[mcp_servers.socials] url = "…"` + `codex mcp login socials`.
+### 4. Install the skills (recommended)
 
-### ④ Install the skills (recommended)
+Skills teach the agent the workflows. Download `.skill` bundles from [GitHub Releases](https://github.com/aryaminus/socials-assistant/releases/latest) and upload to your agent's skill settings. Claude Code users: `/plugin marketplace add aryaminus/socials-assistant`.
 
-Skills teach the agent the workflows. Download `.skill` bundles from [GitHub Releases](https://github.com/aryaminus/socials-assistant/releases/latest) → claude.ai **Settings → Capabilities → Skills → +** (upload each). Claude Code instead: `/plugin marketplace add aryaminus/socials-assistant`.
+### 5. Connect your platforms — inside the chat
 
-### ⑤ Connect your platforms — inside the chat
-
-In claude.ai, just ask: *"Connect my YouTube account."* The agent:
+In your agent, just ask: *"Connect my YouTube account."* The agent:
 
 1. Calls `platform_oauth_url` → shows you a consent link
 2. You approve in the browser → platform redirects to a page saying "copy this URL"
@@ -57,13 +62,15 @@ In claude.ai, just ask: *"Connect my YouTube account."* The agent:
 
 Then: *"Snapshot my accounts"* → weekly *"digest please"* → script reviews, publish packages, outreach drafts all work from chat.
 
-## One-line setup prompt (paste into claude.ai)
+## One-line setup prompt
 
-After step ③, paste this prompt and the agent handles the rest:
+After step 3, paste this prompt into your agent and it handles the rest:
 
 > Set up my Socials Assistant. Check connection_status, then connect my YouTube, Instagram, and TikTok accounts one at a time. After each is connected, run a snapshot. When all snapshots are done, build my creator profile from the data and run a weekly digest.
 
 The agent will: check what's connected → issue platform_oauth_url for each platform → show consent links → wait for you to paste redirects back → exchange tokens → snapshot each platform → auto-build your creator profile from audience/content data → generate your first digest.
+
+**Full setup prompt** (works from zero, agent-agnostic): see [docs/SETUP-PROMPT.md](SETUP-PROMPT.md)
 
 ## Why this architecture
 

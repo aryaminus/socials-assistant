@@ -1,6 +1,10 @@
 # Socials Assistant — Agent Integration Guide
 
-One vault, every agent: Claude Code, Claude Desktop, Codex, Gemini CLI, opencode, Cursor, ChatGPT (via remote MCP). Local-first, official APIs only.
+One vault, every agent: Claude, ChatGPT, Gemini, Codex, Cursor, DeepSeek, Qwen, Pi, opencode, Claude Desktop, Claude Code, and any MCP-compatible agent. Local-first, official APIs only.
+
+## One-prompt setup
+
+**Paste this into any agent** — it handles everything: [docs/SETUP-PROMPT.md](docs/SETUP-PROMPT.md)
 
 ## Install
 
@@ -11,12 +15,13 @@ One vault, every agent: Claude Code, Claude Desktop, Codex, Gemini CLI, opencode
 | Claude Code plugin | `/plugin marketplace add aryaminus/socials-assistant` → `/plugin install socials-assistant` |
 | Codex / Cursor / Copilot / 50+ hosts | `npx skills add aryaminus/socials-assistant -g` |
 | claude.ai (web) | Download `.skill` bundle from releases → Settings → Capabilities → Skills → + |
-| Claude Desktop | `claude_desktop_config.json` snippet in `agents/README.md` |
+| Claude Desktop | `claude_desktop_config.json` snippet in [agents/README.md](agents/README.md) |
 | Gemini CLI | `gemini-extension.json` committed; or MCP block in `~/.gemini/settings.json` |
 | ChatGPT | Deploy the Worker → add as plugin/custom connector (Business/Enterprise) or via Responses API `tools: [{type: "mcp"}]` |
-| Cloud (multi-tenant) | `cd infra/worker && npx wrangler deploy` (guide: `docs/hosting-cloudflare.md`) |
+| Cloud (multi-tenant) | `cd infra/worker && npx wrangler deploy` (guide: [docs/hosting-cloudflare.md](docs/hosting-cloudflare.md)) |
+| npm (any agent with Node.js) | `npx socials-mcp onboard` — walks through credential setup |
 
-Zero-install cloud journey (deploy button → /setup checklist → claude.ai connector): **docs/GET-STARTED-CLOUD.md**
+Zero-install cloud journey (deploy button → /setup checklist → agent connector): **[docs/GET-STARTED-CLOUD.md](docs/GET-STARTED-CLOUD.md)**
 
 From source:
 
@@ -50,7 +55,7 @@ Tests, audit, lint, CodeQL also run in CI (`.github/workflows/ci.yml`, `codeql.y
 
 CI (`ci.yml`) skips `chore(release):` commits to avoid duplicate runs.
 
-Stable asset URLs after any release: `releases/latest/download/socials-mcp-X.Y.Z.tgz` pattern + per-skill `.skill` for claude.ai upload.
+Stable asset URLs after any release: `releases/latest/download/socials-mcp-X.Y.Z.tgz` pattern + per-skill `.skill` for upload.
 
 Note: `apps/mcp/dist-bundle/` is gitignored (built by prepack/publish); never commit vaults (`*.db*`), `.socials-data/`, or `controlkeel/` governance DBs.
 
@@ -165,7 +170,7 @@ The CI release flow does this automatically on tag push: `release-smoke.yml` bui
 
 ## Repo conventions
 
-- pnpm monorepo; Node ≥ 22.5 (built-in `node:sqlite`); TypeScript strict; ESM only.
+- pnpm monorepo; Node >= 22.5 (built-in `node:sqlite`); TypeScript strict; ESM only.
 - Workspace packages: `@socials/shared`, `@socials/vault`, `@socials/connectors`, app `socials-mcp`.
-- Skills live in `skills/<name>/SKILL.md` (agentskills.io spec); `.claude/skills/` and `.agents/skills/` are symlinks for native discovery.
+- Skills live in `skills/<name>/SKILL.md` (agentskills.io spec); `.claude/skills/` and `.agents/skills/` symlinks for native discovery.
 - Version bumps: update `apps/mcp/package.json`, root `package.json`, `server.json`, `.claude-plugin/plugin.json` together; log in `CHANGELOG.md`.

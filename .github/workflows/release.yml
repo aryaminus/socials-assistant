@@ -229,12 +229,12 @@ jobs:
             exit 1
           fi
 
-          if npm view "${PACKAGE_NAME}@${PACKAGE_VERSION}" --registry=https://registry.npmjs.org version >/dev/null 2>&1; then
+          if npm view "${PACKAGE_NAME}@${PACKAGE_VERSION}" version >/dev/null 2>&1; then
             echo "${PACKAGE_NAME}@${PACKAGE_VERSION} already exists on npm; skipping."
             exit 0
           fi
 
-          cd apps/mcp && npm publish --access public --provenance --registry=https://registry.npmjs.org
+          cd apps/mcp && npm publish --access public --provenance
 
   # ── Step 5: Verify all channels ─────────────────────────────────────
   verify-channels:
