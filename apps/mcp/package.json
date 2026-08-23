@@ -1,9 +1,11 @@
 {
   "name": "@aryaminus/socials-mcp",
   "version": "0.4.7",
-  "description": "Creator analytics MCP server \u2014 TikTok/Instagram/Facebook/YouTube vault, weekly digests, and brand-outreach support. Local SQLite vault, official APIs only.",
+  "description": "MCP server for social media creators — pull TikTok, Instagram, Facebook, YouTube analytics into a local vault, get weekly digests, draft brand-outreach emails with real numbers. Official APIs only, no scraping.",
   "license": "MIT",
   "type": "module",
+  "author": "aryaminus <sunim.54@gmail.com> (https://github.com/aryaminus)",
+  "homepage": "https://github.com/aryaminus/socials-assistant#readme",
   "bin": {
     "socials-mcp": "dist-bundle/socials-mcp.js"
   },
@@ -26,13 +28,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/aryaminus/socials-assistant.git"
+    "url": "git+https://github.com/aryaminus/socials-assistant.git",
+    "directory": "apps/mcp"
   },
   "bugs": {
     "url": "https://github.com/aryaminus/socials-assistant/issues"
   },
   "keywords": [
     "mcp",
+    "model-context-protocol",
     "social-media",
     "analytics",
     "creator",
@@ -41,7 +45,20 @@
     "instagram",
     "facebook",
     "outreach",
-    "model-context-protocol"
+    "content-creator",
+    "social-analytics",
+    "vault",
+    "sqlite",
+    "weekly-digest",
+    "brand-outreach",
+    "media-kit",
+    "script-review",
+    "ai-agent",
+    "claude",
+    "chatgpt",
+    "gemini",
+    "cursor",
+    "opencode"
   ],
   "files": [
     "dist-bundle",

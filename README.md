@@ -1,101 +1,78 @@
 # Socials Assistant
 
-Open-source analytics vault + MCP server + agent skills for creators. Pull your own TikTok, Instagram, Facebook, and YouTube metrics into a permanent history vault, get weekly digests, and draft brand-outreach emails with real numbers — from any AI agent.
+[![npm version](https://img.shields.io/npm/v/@aryaminus/socials-mcp?logo=npm&color=cb3837)](https://www.npmjs.com/package/@aryaminus/socials-mcp)
+[![GitHub Release](https://img.shields.io/github/v/release/aryaminus/socials-assistant?logo=github)](https://github.com/aryaminus/socials-assistant/releases/latest)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![CI](https://github.com/aryaminus/socials-assistant/actions/workflows/ci.yml/badge.svg)](https://github.com/aryaminus/socials-assistant/actions/workflows/ci.yml)
+[![Docker](https://img.shields.io/badge/Docker-ghcr.io%2Faryaminus%2Fsocials--assistant-2496ED?logo=docker)](https://github.com/aryaminus/socials-assistant/pkgs/container/socials-assistant)
 
-**Official APIs only. No scraping. No ToS risk.**
+**MCP server + agent skills for social media creators.** Pull your own TikTok, Instagram, Facebook, and YouTube analytics into a permanent vault, get weekly digests, review scripts, build media kits, and draft brand outreach with real numbers — from any AI agent.
 
-## Quickstart
+Official APIs only. No scraping. No ToS risk.
 
-**One-prompt setup** (paste into any agent — Claude, ChatGPT, Gemini, Codex, Cursor, DeepSeek, Qwen, Pi, or any MCP-compatible agent):
+## Quick start — pick one
 
-> See [docs/SETUP-PROMPT.md](docs/SETUP-PROMPT.md) — copy the prompt block and paste it into your agent. It handles everything from Cloudflare deploy to platform connection.
+### 1. One prompt (easiest)
 
-**Cloud (zero install):** [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/aryaminus/socials-assistant) → follow [docs/GET-STARTED-CLOUD.md](docs/GET-STARTED-CLOUD.md)
+Copy the prompt from [docs/SETUP-PROMPT.md](docs/SETUP-PROMPT.md) and paste it into Claude, ChatGPT, Gemini, Codex, Cursor, or any MCP-compatible agent. It deploys the server, connects it to your agent, installs the 6 skills, walks you through platform OAuth, and runs your first digest. You click consent screens; the agent does the rest.
 
-**Local:**
+### 2. Cloud, zero install
+
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/aryaminus/socials-assistant)
+
+Then open `https://<your-worker>.workers.dev/setup` for the credential checklist. Full journey: [docs/GET-STARTED-CLOUD.md](docs/GET-STARTED-CLOUD.md).
+
+### 3. npx
+
+```bash
+npx @aryaminus/socials-mcp onboard
+```
+
+Installs nothing globally — prints guided setup for platform credentials, then serves MCP on stdio/HTTP.
+
+### 4. Local from source
+
 ```bash
 git clone https://github.com/aryaminus/socials-assistant && cd socials-assistant
 ./setup.sh && node apps/mcp/bin/socials-mcp.js onboard
 ```
 
-**npm (any agent with Node.js):**
-```bash
-npx @aryaminus/socials-mcp onboard
-```
-
-## Packages
-
-| Channel | Package |
-|---------|---------|
-| **npm** | [`@aryaminus/socials-mcp`](https://www.npmjs.com/package/@aryaminus/socials-mcp) |
-| **GitHub Packages** | [`aryaminus/socials-assistant`](https://github.com/aryaminus/socials-assistant/pkgs/npm/socials-mcp) |
-| **Docker** | `ghcr.io/aryaminus/socials-assistant` |
-| **GitHub Release** | [v0.4.5](https://github.com/aryaminus/socials-assistant/releases/tag/v0.4.5) — cosign-signed, checksums |
-
-## How it works
-
-```
-Platform APIs (YouTube · Instagram · Facebook · TikTok)
-  ↓ OAuth + snapshots
-SQLite Vault (local) or D1 (Cloudflare)
-  ↓ agent reads
-Skills: digest · outreach · media-kit · script-review · publish-package
-```
-
-| Surface | Command |
-|---------|---------|
-| Local stdio | `node apps/mcp/bin/socials-mcp.js` |
-| Local HTTP | `--http` + `SOCIALS_MCP_TOKEN` |
-| Cloud (multi-tenant) | Deploy Worker → one URL for all agents |
-
 ## What you get
 
-- **20 MCP tools** — connect, snapshot, query, compare, digest, outreach
-- **6 skills** — socials-connect, weekly-digest, script-review, publish-package, brand-outreach, media-kit
-- **TikTok CSV importer** — retention, traffic sources, search terms (Studio-only data, one command)
-- **History vault** — platforms expire analytics; this doesn't
-- **Draft-first outreach** — real numbers, no auto-send
+| | |
+|--|--|
+| **20 MCP tools** | connect · snapshot · vault query · period compare · top content · audience · digest · media kit · pipeline · outreach log |
+| **6 skills** | [socials-connect](skills/socials-connect/SKILL.md) · [weekly-digest](skills/weekly-digest/SKILL.md) · [script-review](skills/script-review/SKILL.md) · [publish-package](skills/publish-package/SKILL.md) · [brand-outreach](skills/brand-outreach/SKILL.md) · [media-kit](skills/media-kit/SKILL.md) |
+| **History vault** | platforms expire analytics; your SQLite (local) or D1 (cloud) vault doesn't |
+| **TikTok CSV import** | retention, traffic sources, search terms — Studio-only data via one command |
+| **Draft-first outreach** | real numbers from your vault; nothing sends without your approval |
 
 ## Connect your agent
 
-| Agent | Method |
-|-------|--------|
-| Claude (claude.ai) | Settings → Connectors → Add custom connector → paste MCP URL |
-| Claude Desktop | Add to `claude_desktop_config.json` — see [agents/README.md](agents/README.md) |
-| Claude Code | `claude mcp add --transport http socials https://your-worker.workers.dev/mcp` |
-| Codex | `[mcp_servers.socials] url = "…"` + `codex mcp login socials` |
-| Cursor | Settings → MCP Servers → Add → paste MCP URL |
-| Gemini CLI | Add MCP block to `~/.gemini/settings.json` |
-| ChatGPT | Deploy the Worker → add as custom connector |
-| Any MCP-compatible agent | See [agents/README.md](agents/README.md) |
-
-## Capabilities & limits
-
-Full capability map, derived analyses, and honest data-availability table: [docs/CAPABILITIES.md](docs/CAPABILITIES.md)
-
-## Deploy
-
-| Path | Guide |
-|------|-------|
-| Cloudflare Workers (recommended) | [docs/hosting-cloudflare.md](docs/hosting-cloudflare.md) |
-| Docker / VPS | `docker compose up --build` |
-| Local | `./setup.sh` |
+| Agent | How |
+|-------|-----|
+| Claude.ai / Desktop | Settings → Connectors → custom connector → paste MCP URL |
+| Claude Code | `claude mcp add --transport http socials <URL>` |
+| Codex | `[mcp_servers.socials] url = "<URL>"` + `codex mcp login socials` |
+| Cursor | Settings → MCP Servers → paste URL |
+| Gemini CLI | mcpServers block in `~/.gemini/settings.json` |
+| Everything else | [agents/README.md](agents/README.md) |
 
 ## Docs
 
-| Doc | What |
-|-----|------|
-| [docs/SETUP-PROMPT.md](docs/SETUP-PROMPT.md) | **One-prompt setup** — paste into any agent |
-| [docs/GET-STARTED-CLOUD.md](docs/GET-STARTED-CLOUD.md) | Zero-install cloud journey |
-| [docs/hosting-cloudflare.md](docs/hosting-cloudflare.md) | Cloudflare deploy guide |
-| [docs/CAPABILITIES.md](docs/CAPABILITIES.md) | Full capability map |
-| [docs/automation.md](docs/automation.md) | Weekly snapshot + digest cron |
-| [docs/onboarding-*.md](docs/) | Per-platform OAuth setup |
-| [AGENTS.md](AGENTS.md) | Install, env vars, operations |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | Dev setup, ground rules |
+| Doc | Read when |
+|-----|-----------|
+| [docs/SETUP-PROMPT.md](docs/SETUP-PROMPT.md) | you want the one-prompt path |
+| [docs/GET-STARTED-CLOUD.md](docs/GET-STARTED-CLOUD.md) | deploying to Cloudflare |
+| [docs/onboarding-google.md](docs/onboarding-google.md) / [meta](docs/onboarding-meta.md) / [tiktok](docs/onboarding-tiktok.md) | creating platform apps for OAuth |
+| [docs/CAPABILITIES.md](docs/CAPABILITIES.md) | checking what data each platform exposes |
+| [docs/hosting-cloudflare.md](docs/hosting-cloudflare.md) | manual cloud deployment details |
+| [docs/automation.md](docs/automation.md) | scheduling weekly snapshots + digests |
+| [AGENTS.md](AGENTS.md) | env vars, CLI commands, release process |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | developing on this repo |
 
 ## Security
 
-Tokens encrypted at rest. Official APIs only. Vault is local by default. Outreach never auto-sends. Details: [SECURITY.md](SECURITY.md)
+Tokens encrypted at rest (AES-256-GCM) · official APIs only · vault local by default · outreach never auto-sends. Details: [SECURITY.md](SECURITY.md).
 
-MIT © 2026
+MIT © 2026 [aryaminus](https://github.com/aryaminus)

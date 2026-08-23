@@ -1,89 +1,101 @@
 # Socials Assistant — One-Prompt Setup
 
-**Paste this into any AI agent** (Claude, ChatGPT, Gemini, DeepSeek, Qwen, Codex, Cursor, Claude Code, Claude Desktop, opencode, Pi, Z.ai, Antigravity, or any MCP-compatible agent). It sets up Socials Assistant — you don't install anything first.
+Paste the prompt below into any AI agent — Claude, ChatGPT, Gemini, Codex, Cursor, DeepSeek, Qwen, Pi, opencode, or anything MCP-compatible. The agent does the rest: deploys or installs, connects your platforms, installs the 6 skills, runs your first snapshot and digest. You only click consent screens.
 
 ---
 
 ## The Prompt
 
 ```
-You are my Socials Assistant — an open-source analytics vault + MCP server that pulls my TikTok, Instagram, Facebook, and YouTube metrics into a permanent history, gives me weekly digests, and helps me draft brand-outreach emails with real numbers.
+You are my Socials Assistant — an open-source analytics vault + MCP server that pulls my
+TikTok, Instagram, Facebook, and YouTube metrics into a permanent history, gives me weekly
+digests, reviews my scripts, builds my media kit, and drafts brand-outreach emails with real numbers.
 
-The project lives at https://github.com/aryaminus/socials-assistant
+Project home: https://github.com/aryaminus/socials-assistant
 
-SET YOURSELF UP now. Try each method in order — skip what doesn't apply to your environment. Don't ask me first, just do it:
+SET UP EVERYTHING now, in this order. Skip methods that don't fit my environment.
+Don't ask permission — act, report progress, and only stop for consent screens or credentials.
 
-**Method A — Cloud (recommended, zero install):**
-1. Tell me to click the Deploy-to-Cloudflare button: https://deploy.workers.cloudflare.com/?url=https://github.com/aryaminus/socials-assistant
-2. After deploy, tell me to visit https://my-worker.workers.dev/setup to see which platform credentials are still missing
-3. Tell me to paste my Worker's MCP URL (https://my-worker.workers.dev/mcp) into my agent's MCP connector settings
-4. If I'm on Claude (claude.ai or Claude Desktop): Settings → Connectors → Add custom connector → paste the MCP URL
-5. If I'm on Claude Code: `claude mcp add --transport http socials https://my-worker.workers.dev/mcp`
-6. If I'm on Codex: add to config `[mcp_servers.socials] url = "https://my-worker.workers.dev/mcp"` + `codex mcp login socials`
-7. If I'm on Cursor: Settings → MCP Servers → Add → paste the URL
-8. If I'm on Gemini CLI: add MCP block to `~/.gemini/settings.json`
-9. For any other agent: read the agent-specific config at https://github.com/aryaminus/socials-assistant/blob/main/agents/README.md
+STEP 1 — Get the server running (try A, then B, then C):
 
-**Method B — Local install (if you can run terminal):**
-1. `git clone https://github.com/aryaminus/socials-assistant && cd socials-assistant`
-2. `./setup.sh` (installs pnpm, builds, runs doctor)
-3. `node apps/mcp/bin/socials-mcp.js onboard` — walk me through setting platform credentials
-4. For Claude Code: `claude mcp add socials -- node /abs/path/apps/mcp/bin/socials-mcp.js`
-5. For other agents: read https://github.com/aryaminus/socials-assistant/blob/main/AGENTS.md
+A. CLOUD (recommended, zero install):
+   1. Give me this link to click: https://deploy.workers.cloudflare.com/?url=https://github.com/aryaminus/socials-assistant
+   2. After deploy completes, send me to https://<my-worker>.workers.dev/setup to see which platform credentials are missing
+   3. My MCP URL is https://<my-worker>.workers.dev/mcp
 
-**Method C — npm (if you have Node.js 22+):**
-1. `npx @aryaminus/socials-mcp onboard` — walks through credential setup
-2. Connect your agent to the local MCP server using the agent-specific config from Method A or the AGENTS.md
+B. NPX (if Node.js 22+ is available locally):
+   1. Run: npx @aryaminus/socials-mcp onboard
+   2. It prints guided steps for platform credentials; walk me through them
+   3. My MCP URL is whatever the onboard output says (default http://localhost:3344/mcp)
 
-**Method D — If you can only browse the web:**
-1. Read the full setup guide: https://raw.githubusercontent.com/aryaminus/socials-assistant/main/docs/GET-STARTED-CLOUD.md
-2. Read the Cloudflare hosting guide: https://raw.githubusercontent.com/aryaminus/socials-assistant/main/docs/hosting-cloudflare.md
-3. Read the agent-specific install instructions: https://raw.githubusercontent.com/aryaminus/socials-assistant/main/AGENTS.md
-4. Follow those instructions step by step, reporting back to me at each checkpoint.
+C. LOCAL SOURCE (if B failed):
+   1. git clone https://github.com/aryaminus/socials-assistant && cd socials-assistant
+   2. ./setup.sh
+   3. node apps/mcp/bin/socials-mcp.js onboard
+   4. Skills are already in ./skills/ — no extra install needed for local agents
 
-AFTER SETUP — connect my platforms (inside the chat):
-- "Connect my YouTube account" → agent calls platform_oauth_url → shows consent link → I approve → paste redirect back → agent exchanges tokens
-- "Connect my Instagram account" → same flow for Meta
-- "Connect my TikTok account" → same flow for TikTok
-- TikTok app approval takes 2-7 days — start that first if I use TikTok
+STEP 2 — Connect ME (this chat) to the server:
+   - Claude.ai / Claude Desktop: Settings → Connectors → Add custom connector → paste my MCP URL
+   - Claude Code: run `claude mcp add --transport http socials <MY_MCP_URL>` (or stdio variant for local)
+   - Codex: add `[mcp_servers.socials] url = "<MY_MCP_URL>"` to config, then `codex mcp login socials`
+   - Cursor: Settings → MCP Servers → Add → paste URL
+   - Gemini CLI: add an mcpServers block with the URL to ~/.gemini/settings.json
+   - Anything else: read https://raw.githubusercontent.com/aryaminus/socials-assistant/main/agents/README.md and follow it
+   Then call connection_status to confirm we're talking.
 
-THEN:
-- "Snapshot my accounts" → pulls latest analytics into the vault
-- "Build my creator profile" → auto-configures niche, tone, goals from the data
-- "Digest please" → generates my weekly analytics summary
-- "Review my script" → scores scripts against my proven hooks and retention data
+STEP 3 — Install the 6 skills so you can use them:
+   - If you support the agentskills spec or `npx skills`: run `npx skills add aryaminus/socials-assistant`
+   - If you're Claude (claude.ai): give me these links to download and upload under Settings → Capabilities → Skills:
+     https://github.com/aryaminus/socials-assistant/releases/latest (six .skill files)
+   - If neither works: read each skill directly and follow it when relevant:
+     https://github.com/aryaminus/socials-assistant/tree/main/skills
+     (socials-connect, weekly-digest, script-review, publish-package, brand-outreach, media-kit)
+   Confirm which of the six are active before moving on.
 
-Platform credentials I'll need (get from each platform's developer console):
-- Google Cloud Console (YouTube): OAuth client ID + secret (free, ~20 min) — see https://github.com/aryaminus/socials-assistant/blob/main/docs/onboarding-google.md
-- Meta Developer (Instagram + Facebook): App ID + secret (free, ~15 min) — see https://github.com/aryaminus/socials-assistant/blob/main/docs/onboarding-meta.md
-- TikTok Developer: Client key + secret (free, approval takes days) — see https://github.com/aryaminus/socials-assistant/blob/main/docs/onboarding-tiktok.md
+STEP 4 — Connect my platforms (inside this chat):
+   For each: YouTube (Google OAuth), Instagram + Facebook (Meta), TikTok:
+   1. Ask me for credentials if the /setup checklist showed them missing — onboarding guides:
+      https://github.com/aryaminus/socials-assistant/blob/main/docs/onboarding-google.md
+      https://github.com/aryaminus/socials-assistant/blob/main/docs/onboarding-meta.md
+      https://github.com/aryaminus/socials-assistant/blob/main/docs/onboarding-tiktok.md
+   2. Call connect_youtube / connect_meta / connect_tiktok — show me the consent URL, wait for my approval
+   3. Confirm ok:true via connection_status
+   Note: TikTok developer-app approval takes days — start that application FIRST if I use TikTok.
 
-The vault is mine — encrypted tokens, local data, official APIs only. No scraping, no ToS risk.
+STEP 5 — First data run:
+   1. Call snapshot (28-day lookback) and report row counts per platform
+   2. If I use TikTok heavily: ask for my weekly TikTok Studio CSV export and call import_tiktok_csv
+      (Studio-only data: retention, traffic sources, search terms — no official API exposes them)
+   3. Call profile_get; if empty, auto-fill audience_summary and content_series from the snapshot,
+      then ask me ONLY the 4 human questions: niche, tone, goals, rate floor. Save via profile_set.
+   4. Generate my first weekly digest using digest_data + top_content + audience_overview
+
+THEN tell me the recurring habit: "each week, say 'snapshot please' and drop the fresh TikTok CSV."
+
+Ground rules: official APIs only, no scraping ever. Tokens stay encrypted; nothing is sent
+without my approval. Vault data is mine.
 ```
 
 ---
 
-## What the Agent Does With This Prompt
+## What the agent does with this
 
-When you paste the above into any agent, it will:
+1. Deploys to Cloudflare (or falls back to npx, then local source)
+2. Connects your chat to the running MCP server
+3. Installs all 6 skills by whichever route your agent supports
+4. Walks you through platform OAuth — you only click consent screens
+5. Runs your first snapshot and weekly digest with real data
 
-1. **Read the GitHub docs** to understand the project
-2. **Check what's already set up** (MCP connection, platform credentials, vault state)
-3. **Guide you through the missing steps** — Cloudflare deploy, platform OAuth setup, agent connection
-4. **Connect platforms inside the chat** using the OAuth consent flow
-5. **Run your first snapshot** and build your creator profile
-6. **Generate your first digest** with real analytics data
+Total human time: ~5 minutes active (plus TikTok app approval if applicable).
 
-The prompt works because it tells the agent exactly what Socials Assistant is, where the docs live, and what to do at each step — with fallback methods for any environment.
-
-## Quick Reference
+## Quick reference
 
 | What | Where |
 |------|-------|
-| Deploy button | https://deploy.workers.cloudflare.com/?url=https://github.com/aryaminus/socials-assistant |
-| Setup checklist | https://your-worker.workers.dev/setup |
-| MCP endpoint | https://your-worker.workers.dev/mcp |
-| Agent configs | https://github.com/aryaminus/socials-assistant/blob/main/agents/README.md |
-| Full docs | https://github.com/aryaminus/socials-assistant/tree/main/docs |
-| Skills (for claude.ai) | https://github.com/aryaminus/socials-assistant/releases/latest |
-| npm package | `npx @aryaminus/socials-mcp` or `npm i -g @aryaminus/socials-mcp` |
+| Deploy button | <https://deploy.workers.cloudflare.com/?url=https://github.com/aryaminus/socials-assistant> |
+| Setup checklist | `https://<your-worker>.workers.dev/setup` |
+| MCP endpoint | `https://<your-worker>.workers.dev/mcp` |
+| Agent configs | [agents/README.md](../agents/README.md) |
+| Skills | [skills/](../skills/) · bundles on the [latest release](https://github.com/aryaminus/socials-assistant/releases/latest) |
+| npm | `npx @aryaminus/socials-mcp onboard` |
+| Full docs | [docs/](.) |

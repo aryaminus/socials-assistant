@@ -2,7 +2,7 @@
 
 One server, every agent. Local mode runs on your machine (SQLite vault); cloud mode is one URL (see `docs/hosting-cloudflare.md`).
 
-> Replace `/path/to/socials-assistant` with your clone path. After we publish to npm, `npx socials-mcp` replaces the node path.
+> Replace `/path/to/socials-assistant` with your clone path. Or skip cloning entirely: `npx @aryaminus/socials-mcp` serves the same MCP server.
 
 ## Claude Code (project)
 
