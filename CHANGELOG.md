@@ -2,6 +2,20 @@
 
 All notable changes to this project are documented here. Format: Keep a Changelog; versioning: SemVer.
 
+## [0.4.1] — 2026-08-23
+
+### Added
+- `docs/SETUP-PROMPT.md`: single magic prompt users paste into any AI agent (Claude, ChatGPT, Gemini, Codex, Cursor, DeepSeek, Qwen, Pi, opencode, Claude Desktop, Claude Code, or any MCP-compatible agent) for full end-to-end setup
+
+### Changed
+- All docs now agent-agnostic — no longer claude.ai-specific; every agent listed equally (Claude, ChatGPT, Gemini, Codex, Cursor, DeepSeek, Qwen, Pi, opencode, Claude Desktop, Claude Code, Antigravity, Z.ai, and any MCP-compatible agent)
+- README.md: one-prompt setup section prominent at top
+- AGENTS.md: one-prompt setup reference, all agents listed in install table
+- GET-STARTED-CLOUD.md: agent-agnostic connector instructions with per-agent table
+
+### Fixed
+- npm publish: removed `--registry` flag that overrode `.npmrc` token from `setup-node`
+
 ## [0.4.0] — 2026-08-23
 
 ### Added
