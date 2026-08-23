@@ -57,6 +57,14 @@ In claude.ai, just ask: *"Connect my YouTube account."* The agent:
 
 Then: *"Snapshot my accounts"* → weekly *"digest please"* → script reviews, publish packages, outreach drafts all work from chat.
 
+## One-line setup prompt (paste into claude.ai)
+
+After step ③, paste this prompt and the agent handles the rest:
+
+> Set up my Socials Assistant. Check connection_status, then connect my YouTube, Instagram, and TikTok accounts one at a time. After each is connected, run a snapshot. When all snapshots are done, build my creator profile from the data and run a weekly digest.
+
+The agent will: check what's connected → issue platform_oauth_url for each platform → show consent links → wait for you to paste redirects back → exchange tokens → snapshot each platform → auto-build your creator profile from audience/content data → generate your first digest.
+
 ## Why this architecture
 
 - Your deployment = your data. Tokens are encrypted at rest under YOUR encryption key; the operator of a deployment is its trust root.

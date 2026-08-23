@@ -16,7 +16,7 @@ jobs:
         with:
           node-version: 25
           cache: pnpm
-      - run: pnpm install --frozen-lockfile=false
+      - run: pnpm install --frozen-lockfile=true
       - name: Typecheck + build
         run: pnpm exec tsc -b packages/shared packages/vault packages/connectors apps/mcp
       - name: Tests

@@ -49,13 +49,21 @@ async function main(): Promise<void> {
 
   if (cmd === "config") {
     const sub = args[1] ?? "get";
-    if (sub === "set" && args.length >= 4) {
+    if (sub === "set") {
+      if (args.length < 4) {
+        process.stderr.write("Usage: socials-mcp config set <key> <value>\n");
+        process.exit(1);
+      }
       writeConfigValue(args[2], args[3]);
       process.stdout.write(`saved ${args[2]}\n`);
     } else {
+      const keyFilter = args[2];
       const cfg = readConfigFile();
       const redacted: Record<string, string> = {};
-      for (const [k, v] of Object.entries(cfg)) redacted[k] = /secret/i.test(k) ? `${v.slice(0, 6)}…(${v.length} chars)` : v;
+      for (const [k, v] of Object.entries(cfg)) {
+        if (keyFilter && k !== keyFilter) continue;
+        redacted[k] = /secret/i.test(k) ? `${v.slice(0, 6)}…(${v.length} chars)` : v;
+      }
       process.stdout.write(JSON.stringify(redacted, null, 2) + "\n");
     }
     return;
@@ -97,10 +105,24 @@ async function main(): Promise<void> {
     return;
   }
 
-  if (cmd === "--http") {
+  // handle --http as the primary command (may not be args[0] if --port precedes it)
+  const httpIdx = args.indexOf("--http");
+  if (httpIdx !== -1) {
     const portIdx = args.indexOf("--port");
-    const positional = Number(args[1]);
-    const port = portIdx !== -1 ? Number(args[portIdx + 1]) : Number.isFinite(positional) && positional > 0 ? positional : Number(process.env.SOCIALS_MCP_PORT ?? 3344);
+    let port: number;
+    if (portIdx !== -1 && args[portIdx + 1]) {
+      port = Number(args[portIdx + 1]);
+    } else {
+      // positional after --http: e.g. --http 8080 or --port 8080 --http
+      const afterHttp = args[httpIdx + 1];
+      const afterPort = portIdx !== -1 ? args[portIdx + 1] : undefined;
+      const candidate = afterHttp && !afterHttp.startsWith("--") ? Number(afterHttp) : afterPort ? Number(afterPort) : NaN;
+      port = Number.isFinite(candidate) && candidate > 0 ? candidate : Number(process.env.SOCIALS_MCP_PORT ?? 3344);
+    }
+    if (!Number.isFinite(port) || port <= 0 || port > 65535) {
+      process.stderr.write(`Invalid port: ${port}\n`);
+      process.exit(1);
+    }
     await runHttpServer(port);
     return; // runHttpServer keeps the process alive
   }

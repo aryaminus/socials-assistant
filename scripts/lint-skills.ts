@@ -1,4 +1,4 @@
-#!/usr/bin/env env tsx
+#!/usr/bin/env tsx
 /**
  * lint-skills — validate each skills/<name>/SKILL.md against the agentskills.io
  * spec: frontmatter fields, name rules (must match dir), description length,

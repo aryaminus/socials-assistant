@@ -10,12 +10,14 @@ dist-bundle/
 .env
 .env.*
 !.env.example
+.dev.vars
 
 # runtime data — never commit vaults, tokens, or local governance DBs
 .socials-data/
 .socials-test/
 digests/
 *.db
+*.db-journal
 *.db-shm
 *.db-wal
 controlkeel/

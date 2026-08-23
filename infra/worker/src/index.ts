@@ -34,7 +34,7 @@ function userIdFromProps(props: { sessionId?: string; clientId?: string; userId?
 
 export class SocialsMCP extends McpAgent<Env> {
   server = new McpServer(
-    { name: "socials-mcp-cloud", version: "0.1.0" },
+    { name: "socials-mcp-cloud", version: "0.4.0" },
     {
       instructions:
         "Socials Assistant (cloud). Same tools as the local server: store platform credentials, snapshot analytics into your D1 vault, query, digest, media-kit. Draft-first outreach.",
@@ -42,7 +42,7 @@ export class SocialsMCP extends McpAgent<Env> {
   );
 
   async init() {
-    const vault: D1Vault = initVault(this.env.VAULT, userIdFromProps(this.props as never));
+    const vault: D1Vault = initVault(this.env.VAULT, userIdFromProps(this.props as never), this.env.TOKEN_ENCRYPTION_KEY);
     const text = (t: unknown) => ({ content: [{ type: "text" as const, text: typeof t === "string" ? t : JSON.stringify(t, null, 2) }] });
 
     this.server.tool("connection_status", "Connected platform accounts + token health.", {}, async () =>
@@ -113,6 +113,108 @@ export class SocialsMCP extends McpAgent<Env> {
     );
     this.server.tool("outreach_log_list", "List outreach attempts.", { status: z.string().optional() }, async ({ status }) =>
       text(await vault.outreachList(status))
+    );
+
+    this.server.tool(
+      "outreach_log_update",
+      "Update an outreach attempt (mark sent/replied, add notes or a thread reference).",
+      {
+        id: z.number().int(),
+        status: z.enum(["drafted", "sent", "replied", "rejected", "closed"]).optional(),
+        notes: z.string().optional(),
+        thread_ref: z.string().optional(),
+      },
+      async ({ id, status, notes, thread_ref }) => text(await vault.outreachUpdate(id, { status, notes, thread_ref }))
+    );
+
+    this.server.tool("audience_overview", "Audience demographics (age/gender/country/city/source) from the latest snapshot of each platform.", {}, async () => {
+      const accounts = await vault.listAccounts();
+      if (!accounts.length) return text({ audience: {}, hint: "No connected accounts. Connect a platform first." });
+      const audiences: Record<string, unknown> = {};
+      for (const acct of accounts) {
+        const rows = await vault.query(
+          `SELECT a.dimension, a.key, a.value FROM audience a
+           JOIN snapshots s ON a.snapshot_id = s.id
+           WHERE s.account_id = ${acct.id}
+           ORDER BY s.taken_at DESC`
+        );
+        audiences[acct.platform] = rows;
+      }
+      return text(audiences);
+    });
+
+    this.server.tool(
+      "profile_get",
+      "Read the creator profile (niche, tone, series, rate floor, goals, keywords) that tunes all skills to this specific creator.",
+      {},
+      async () => {
+        const profile = await vault.getProfile();
+        const hasAny = Object.keys(profile).some((k) => k !== "updated_at");
+        return text(hasAny ? profile : { profile, hint: "Profile is empty. Ask the creator 4 questions (niche? tone? goals? rate floor?) and set with profile_set." });
+      }
+    );
+
+    this.server.tool(
+      "profile_set",
+      "Create or update the creator profile (partial merge — only provided fields change).",
+      {
+        name: z.string().optional(),
+        niche: z.string().optional().describe("What the creator makes content about, free text"),
+        tone_notes: z.string().optional().describe("Voice/style scripts and pitches should match"),
+        content_series: z.array(z.object({ name: z.string(), note: z.string().optional() })).optional(),
+        audience_summary: z.string().optional(),
+        brand_categories: z.array(z.string()).optional().describe("Brand categories that fit this audience"),
+        past_collaborations: z.array(z.object({ brand: z.string(), note: z.string().optional() })).optional(),
+        rate_floor: z.number().optional().describe("Minimum acceptable rate — pitches never go below"),
+        goals: z.array(z.string()).optional(),
+        keywords: z.array(z.string()).optional().describe("SEO seed words for titles/captions"),
+      },
+      async (patch) => text(await vault.setProfile(patch))
+    );
+
+    this.server.tool(
+      "pipeline_add",
+      "Add a content idea or deliverable to the creator's pipeline (idea → scripting → script_review → brand_review → approved → posted → measured).",
+      {
+        title: z.string(),
+        platform: z.string().optional().describe("youtube | instagram | facebook | tiktok"),
+        brand: z.string().optional().describe("Sponsoring brand, if this is a paid deliverable"),
+        outreach_id: z.number().int().optional().describe("Linked outreach_log entry"),
+        stage: z.enum(["idea", "scripting", "script_review", "brand_review", "approved", "posted", "measured", "on_hold", "dropped"]).default("idea"),
+        due_date: z.string().optional().describe("YYYY-MM-DD"),
+        script_path: z.string().optional(),
+        brief: z.string().optional().describe("Requirements / what this deliverable is"),
+        notes: z.string().optional(),
+      },
+      async (a) => text(await vault.pipelineAdd(a))
+    );
+
+    this.server.tool(
+      "pipeline_list",
+      "List pipeline items (the creator's production calendar), optionally filtered by stage.",
+      { stage: z.string().optional() },
+      async ({ stage }) => text(await vault.pipelineList(stage))
+    );
+
+    this.server.tool(
+      "pipeline_update",
+      "Move a pipeline item along or edit fields. After posting, set stage=posted with post_url.",
+      {
+        id: z.number().int(),
+        stage: z.enum(["idea", "scripting", "script_review", "brand_review", "approved", "posted", "measured", "on_hold", "dropped"]).optional(),
+        due_date: z.string().optional(),
+        script_path: z.string().optional(),
+        post_url: z.string().optional(),
+        posted_at: z.string().optional(),
+        brief: z.string().optional(),
+        notes: z.string().optional(),
+        brand: z.string().optional(),
+      },
+      async ({ id, ...patch }) => {
+        const item = await vault.pipelineUpdate(id, patch);
+        if (!item) return text({ error: "not_found", fix: "pipeline_list to find the id.", id });
+        return text(item);
+      }
     );
 
     // ------------------- in-chat platform connect (zero-local-install path) -------------------

@@ -7,8 +7,7 @@ import type { D1Vault, CloudSnapshot } from "./vault.ts";
 
 type Creds = Record<string, string>;
 
-export async function snapshotAll(vault: D1Vault, tokenKey: string, days: number): Promise<Record<string, unknown>> {
-  void tokenKey;
+export async function snapshotAll(vault: D1Vault, _tokenKey: string, days: number): Promise<Record<string, unknown>> {
   const results: Record<string, unknown> = {};
   for (const acct of await vault.listAccounts()) {
     try {

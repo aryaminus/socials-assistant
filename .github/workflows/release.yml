@@ -33,6 +33,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 25
+          cache: pnpm
 
       - name: Resolve tag
         id: tag
@@ -61,7 +62,7 @@ jobs:
 
       - name: Run test suite + audits before releasing
         run: |
-          pnpm install --frozen-lockfile=false
+          pnpm install --frozen-lockfile=true
           pnpm exec tsc -b packages/shared packages/vault packages/connectors apps/mcp
           npx tsx --test packages/shared/test/*.test.ts packages/vault/test/*.test.ts
           npx tsx scripts/audit-mcp.ts

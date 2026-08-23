@@ -24,10 +24,10 @@ stdio/HTTP, or deploy `infra/worker` to Cloudflare for a single remote URL.
 
 ## Key files
 
-- `apps/mcp/` — socials-mcp server (15 tools, stdio + streamable HTTP) + CLI
+- `apps/mcp/` — socials-mcp server (20 tools, stdio + streamable HTTP) + CLI
 - `packages/vault/` — SQLite vault, TikTok Studio CSV importer, analytics queries
 - `packages/connectors/` — YouTube / Meta / TikTok official-API connectors
-- `skills/` — socials-connect, weekly-digest, brand-outreach, media-kit
+- `skills/` — socials-connect, weekly-digest, brand-outreach, media-kit, script-review, publish-package
 - `infra/worker/` — Cloudflare Workers remote MCP (OAuth 2.1, multi-tenant)
 - `docs/` — per-platform onboarding, hosting, automation, deliverability
 

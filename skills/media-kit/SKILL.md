@@ -12,8 +12,8 @@ The media kit is the creator's business card. Generate it from the vault so ever
 
 1. Call `socials-mcp:profile_get` — name, niche positioning, past_collaborations feed the header and case-study sections (ask the user to fill gaps; never invent brand names).
 2. Call `socials-mcp:media_kit_data` — followers, 30-day views, avg engagement, top videos, audience highlights per platform.
-2. If data is thin (no 30-day views, missing platforms), prompt the user to run `socials-mcp:snapshot` and (TikTok) `socials-mcp:import_tiktok_csv` first.
-3. Generate `media-kit.md` from the template in [assets/media-kit-template.md](assets/media-kit-template.md).
+3. If data is thin (no 30-day views, missing platforms), prompt the user to run `socials-mcp:snapshot` and (TikTok) `socials-mcp:import_tiktok_csv` first.
+4. Generate `media-kit.md` from the template in [assets/media-kit-template.md](assets/media-kit-template.md).
 4. Fill "Past collaborations" from `socials-mcp:outreach_log_list` plus anything the user recalls — ask, don't invent.
 5. Export options: leave as markdown, render to PDF, or publish as a live link (GitHub page / Notion) — a live link is preferred for cold emails.
 

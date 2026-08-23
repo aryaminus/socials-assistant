@@ -80,4 +80,33 @@ CREATE TABLE IF NOT EXISTS outreach_log (
   notes TEXT,
   thread_ref TEXT
 );
+
+CREATE TABLE IF NOT EXISTS csv_imports (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_key TEXT NOT NULL,
+  filename TEXT NOT NULL,
+  kind TEXT,
+  imported_at TEXT NOT NULL,
+  rows INTEGER
+);
+
+CREATE TABLE IF NOT EXISTS content_pipeline (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_key TEXT NOT NULL,
+  title TEXT NOT NULL,
+  platform TEXT,
+  brand TEXT,
+  outreach_id INTEGER REFERENCES outreach_log(id),
+  stage TEXT NOT NULL DEFAULT 'idea',
+  due_date TEXT,
+  script_path TEXT,
+  post_url TEXT,
+  posted_at TEXT,
+  brief TEXT,
+  notes TEXT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT);
 `;

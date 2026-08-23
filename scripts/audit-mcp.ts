@@ -1,4 +1,4 @@
-#!/usr/bin/env env tsx
+#!/usr/bin/env tsx
 /**
  * audit-mcp — MCP contract audit: tool names, descriptions, schemas,
  * deterministic ordering, error channel behavior, version sync.
@@ -75,14 +75,15 @@ const pdone = await client.callTool({ name: "pipeline_update", arguments: { id: 
 check("pipeline_update valid", pdone.isError !== true);
 check("20-tool focused surface", a.tools.length === 20, `${a.tools.length}`);
 
-// 6. version sync: package.json ↔ server VERSION ↔ server.json ↔ plugin.json
+// 6. version sync: root pkg + apps/mcp pkg + server VERSION + server.json + plugin.json
+const rootPkg = JSON.parse(readFileSync(join(here, "..", "package.json"), "utf8"));
 const pkg = JSON.parse(readFileSync(join(here, "..", "apps", "mcp", "package.json"), "utf8"));
 const registry = JSON.parse(readFileSync(join(here, "..", "server.json"), "utf8"));
 const plugin = JSON.parse(readFileSync(join(here, "..", ".claude-plugin", "plugin.json"), "utf8"));
 check(
-  "version sync (pkg/server/server.json/plugin.json)",
-  pkg.version === VERSION && registry.version === VERSION && plugin.version === VERSION,
-  `${VERSION} / ${pkg.version} / ${registry.version} / ${plugin.version}`
+  "version sync (root/apps-mcp/server.json/plugin.json)",
+  rootPkg.version === VERSION && pkg.version === VERSION && registry.version === VERSION && plugin.version === VERSION,
+  `${VERSION} / ${rootPkg.version} / ${pkg.version} / ${registry.version} / ${plugin.version}`
 );
 
 await client.close();

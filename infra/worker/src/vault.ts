@@ -13,6 +13,12 @@ export interface D1Vault {
   boundQuery(sql: string, params: unknown[]): Promise<unknown>;
   outreachAdd(a: { brand: string; contact_email?: string; subject?: string; notes?: string }): Promise<unknown>;
   outreachList(status?: string): Promise<unknown>;
+  outreachUpdate(id: number, patch: { status?: string; notes?: string; thread_ref?: string }): Promise<unknown>;
+  getProfile(): Promise<Record<string, unknown>>;
+  setProfile(patch: Record<string, unknown>): Promise<unknown>;
+  pipelineAdd(a: { title: string; platform?: string; brand?: string; outreach_id?: number; stage?: string; due_date?: string; script_path?: string; brief?: string; notes?: string }): Promise<unknown>;
+  pipelineList(stage?: string): Promise<unknown>;
+  pipelineUpdate(id: number, patch: Record<string, unknown>): Promise<unknown>;
 }
 
 export interface CloudSnapshot {
@@ -34,7 +40,7 @@ export interface CloudSnapshot {
   warnings: string[];
 }
 
-export function initVault(db: D1Database, userKey: string): D1Vault {
+export function initVault(db: D1Database, userKey: string, tokenKey?: string): D1Vault {
   const scoped = (sql: string) => sql; // SQL below scopes by user_key parameters
 
   const vault: D1Vault = {
@@ -68,14 +74,16 @@ export function initVault(db: D1Database, userKey: string): D1Vault {
       return { id: row.id, platform, handle };
     },
     async getCredentials(accountRowId) {
+      if (!tokenKey) throw new Error("TOKEN_ENCRYPTION_KEY is required for decryption");
       const row = await db
         .prepare(`SELECT credentials_json FROM credentials WHERE account_id = ? AND user_key = ? ORDER BY rowid DESC LIMIT 1`)
         .bind(accountRowId, userKey)
         .first<{ credentials_json: string }>();
-      return row ? (JSON.parse(await decrypt(row.credentials_json)) as Record<string, string>) : null;
+      return row ? (JSON.parse(await decrypt(tokenKey, row.credentials_json)) as Record<string, string>) : null;
     },
     async setCredentials(accountRowId, credentials) {
-      const enc = await encrypt(JSON.stringify(credentials));
+      if (!tokenKey) throw new Error("TOKEN_ENCRYPTION_KEY is required for encryption");
+      const enc = await encrypt(tokenKey, JSON.stringify(credentials));
       await db
         .prepare(`INSERT INTO credentials (account_id, user_key, credentials_json, updated_at) VALUES (?, ?, ?, datetime('now'))`)
         .bind(accountRowId, userKey, enc)
@@ -159,6 +167,70 @@ export function initVault(db: D1Database, userKey: string): D1Vault {
         : db.prepare(`SELECT * FROM outreach_log WHERE user_key = ? ORDER BY drafted_at DESC`).bind(userKey);
       return (await stmt.all()).results;
     },
+    async outreachUpdate(id, patch) {
+      const cur = await db.prepare(`SELECT id FROM outreach_log WHERE id = ? AND user_key = ?`).bind(id, userKey).first<{ id: number }>();
+      if (!cur) return { error: "not_found", id };
+      await db
+        .prepare(
+          `UPDATE outreach_log SET
+             status = coalesce(?, status),
+             notes = coalesce(?, notes),
+             thread_ref = coalesce(?, thread_ref),
+             sent_at = CASE WHEN ? = 'sent' THEN ? ELSE sent_at END
+           WHERE id = ? AND user_key = ?`
+        )
+        .bind(patch.status ?? null, patch.notes ?? null, patch.thread_ref ?? null, patch.status ?? "", new Date().toISOString(), id, userKey)
+        .run();
+      return { id, updated: true };
+    },
+    async getProfile() {
+      const row = await db.prepare(`SELECT value FROM meta WHERE key = ?`).bind(`profile:${userKey}`).first<{ value: string }>();
+      return row ? JSON.parse(row.value) : {};
+    },
+    async setProfile(patch) {
+      const existing = await vault.getProfile();
+      const merged = { ...existing, ...patch, updated_at: new Date().toISOString() };
+      await db
+        .prepare(`INSERT INTO meta (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value`)
+        .bind(`profile:${userKey}`, JSON.stringify(merged))
+        .run();
+      return merged;
+    },
+    async pipelineAdd(a) {
+      const now = new Date().toISOString();
+      const r = await db
+        .prepare(
+          `INSERT INTO content_pipeline (user_key, title, platform, brand, outreach_id, stage, due_date, script_path, brief, notes, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        )
+        .bind(userKey, a.title, a.platform ?? null, a.brand ?? null, a.outreach_id ?? null, a.stage ?? "idea", a.due_date ?? null, a.script_path ?? null, a.brief ?? null, a.notes ?? null, now, now)
+        .run();
+      return { id: r.meta.last_row_id, stage: a.stage ?? "idea" };
+    },
+    async pipelineList(stage) {
+      const stmt = stage
+        ? db.prepare(`SELECT * FROM content_pipeline WHERE user_key = ? AND stage = ? ORDER BY due_date ASC NULLS LAST`).bind(userKey, stage)
+        : db.prepare(`SELECT * FROM content_pipeline WHERE user_key = ? ORDER BY due_date ASC NULLS LAST`).bind(userKey);
+      return (await stmt.all()).results;
+    },
+    async pipelineUpdate(id, patch) {
+      const cur = await db.prepare(`SELECT id FROM content_pipeline WHERE id = ? AND user_key = ?`).bind(id, userKey).first<{ id: number }>();
+      if (!cur) return null;
+      const fields: string[] = [];
+      const vals: unknown[] = [];
+      for (const [k, v] of Object.entries(patch)) {
+        if (v !== undefined) {
+          fields.push(`${k} = ?`);
+          vals.push(v);
+        }
+      }
+      if (fields.length === 0) return { id };
+      fields.push(`updated_at = ?`);
+      vals.push(new Date().toISOString());
+      vals.push(id, userKey);
+      await db.prepare(`UPDATE content_pipeline SET ${fields.join(", ")} WHERE id = ? AND user_key = ?`).bind(...vals).run();
+      return (await db.prepare(`SELECT * FROM content_pipeline WHERE id = ? AND user_key = ?`).bind(id, userKey).first()) ?? { id };
+    },
   };
   return vault;
 }
@@ -176,15 +248,15 @@ async function keyMaterial(secret: string): Promise<CryptoKey> {
   return crypto.subtle.importKey("raw", raw, { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
 }
 
-async function encrypt(plaintext: string): Promise<string> {
-  const key = await keyMaterial((globalThis as unknown as { TOKEN_ENCRYPTION_KEY: string }).TOKEN_ENCRYPTION_KEY);
+async function encrypt(secret: string, plaintext: string): Promise<string> {
+  const key = await keyMaterial(secret);
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const ct = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, new TextEncoder().encode(plaintext));
   return btoa(String.fromCharCode(...iv)) + "." + btoa(String.fromCharCode(...new Uint8Array(ct)));
 }
 
-async function decrypt(blob: string): Promise<string> {
-  const key = await keyMaterial((globalThis as unknown as { TOKEN_ENCRYPTION_KEY: string }).TOKEN_ENCRYPTION_KEY);
+async function decrypt(secret: string, blob: string): Promise<string> {
+  const key = await keyMaterial(secret);
   const [ivB64, ctB64] = blob.split(".");
   const iv = Uint8Array.from(atob(ivB64), (c) => c.charCodeAt(0));
   const ct = Uint8Array.from(atob(ctB64), (c) => c.charCodeAt(0));

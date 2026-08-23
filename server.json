@@ -103,12 +103,20 @@
       "description": "Move a pipeline item along (script_review \u2192 brand_review \u2192 approved \u2192 posted \u2192 measured)."
     },
     {
+      "name": "set_platform_credentials",
+      "description": "Store OAuth credentials for a platform (cloud-only; local servers use connect_* tools)."
+    },
+    {
+      "name": "refresh_token",
+      "description": "Force-refresh stored tokens for a platform (cloud-only)."
+    },
+    {
       "name": "platform_oauth_url",
-      "description": "Start in-chat platform connection: returns consent URL + handle."
+      "description": "Start in-chat platform connection: returns consent URL + handle (cloud-only)."
     },
     {
       "name": "platform_oauth_exchange",
-      "description": "Complete an in-chat platform connection with the pasted redirect URL."
+      "description": "Complete an in-chat platform connection with the pasted redirect URL (cloud-only)."
     }
   ],
   "installation": {

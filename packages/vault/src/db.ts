@@ -212,6 +212,37 @@ export class Vault {
   today(): string {
     return isoDate();
   }
+
+  // ---------- outreach log ----------
+
+  outreachAdd(input: { brand: string; contact_email?: string; subject?: string; notes?: string }): { id: number; status: string; brand: string; contact_email?: string; subject?: string; notes?: string } {
+    const r = this.db
+      .prepare("INSERT INTO outreach_log (brand, contact_email, subject, drafted_at, notes) VALUES (?, ?, ?, ?, ?)")
+      .run(input.brand, input.contact_email ?? null, input.subject ?? null, new Date().toISOString(), input.notes ?? null);
+    return { id: Number(r.lastInsertRowid), status: "drafted", ...input };
+  }
+
+  outreachList(status?: string): unknown[] {
+    return status
+      ? this.db.prepare("SELECT * FROM outreach_log WHERE status = ? ORDER BY drafted_at DESC").all(status)
+      : this.db.prepare("SELECT * FROM outreach_log ORDER BY drafted_at DESC").all();
+  }
+
+  outreachUpdate(id: number, patch: { status?: string; notes?: string; thread_ref?: string }): { id: number; updated: boolean } {
+    const cur = this.db.prepare("SELECT id FROM outreach_log WHERE id = ?").get(id);
+    if (!cur) return { id, updated: false };
+    this.db
+      .prepare(
+        `UPDATE outreach_log SET
+           status = coalesce(?, status),
+           notes = coalesce(?, notes),
+           thread_ref = coalesce(?, thread_ref),
+           sent_at = CASE WHEN ? = 'sent' THEN ? ELSE sent_at END
+         WHERE id = ?`
+      )
+      .run(patch.status ?? null, patch.notes ?? null, patch.thread_ref ?? null, patch.status ?? "", new Date().toISOString(), id);
+    return { id, updated: true };
+  }
 }
 
 export function openVault(dataDir?: string): Vault {

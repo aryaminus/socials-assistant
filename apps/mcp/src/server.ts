@@ -364,24 +364,14 @@ export function buildServer(vault: Vault): McpServer {
       subject: z.string().optional(),
       notes: z.string().optional().describe("Context: what was pitched, rate discussed, follow-up plan..."),
     },
-    async (a) => {
-      const r = vault.db
-        .prepare("INSERT INTO outreach_log (brand, contact_email, subject, drafted_at, notes) VALUES (?, ?, ?, ?, ?)")
-        .run(a.brand, a.contact_email ?? null, a.subject ?? null, new Date().toISOString(), a.notes ?? null);
-      return text({ id: Number(r.lastInsertRowid), status: "drafted", ...a });
-    }
+    async (a) => text(vault.outreachAdd(a))
   );
 
   server.tool(
     "outreach_log_list",
     "List outreach attempts, optionally filtered by status (drafted/sent/replied/rejected/closed).",
     { status: z.string().optional() },
-    async ({ status }) => {
-      const rows = status
-        ? vault.db.prepare("SELECT * FROM outreach_log WHERE status = ? ORDER BY drafted_at DESC").all(status)
-        : vault.db.prepare("SELECT * FROM outreach_log ORDER BY drafted_at DESC").all();
-      return text(rows);
-    }
+    async ({ status }) => text(vault.outreachList(status))
   );
 
   server.tool(
@@ -394,19 +384,9 @@ export function buildServer(vault: Vault): McpServer {
       thread_ref: z.string().optional(),
     },
     async ({ id, status, notes, thread_ref }) => {
-      const cur = vault.db.prepare("SELECT id FROM outreach_log WHERE id = ?").get(id);
-      if (!cur) return err({ error: "not_found", fix: "List first with outreach_log_list to find the id.", id });
-      vault.db
-        .prepare(
-          `UPDATE outreach_log SET
-             status = coalesce(?, status),
-             notes = coalesce(?, notes),
-             thread_ref = coalesce(?, thread_ref),
-             sent_at = CASE WHEN ? = 'sent' THEN ? ELSE sent_at END
-           WHERE id = ?`
-        )
-        .run(status ?? null, notes ?? null, thread_ref ?? null, status ?? "", new Date().toISOString(), id);
-      return text({ id, updated: true });
+      const result = vault.outreachUpdate(id, { status, notes, thread_ref });
+      if (!result.updated) return err({ error: "not_found", fix: "List first with outreach_log_list to find the id.", id });
+      return text(result);
     }
   );
 

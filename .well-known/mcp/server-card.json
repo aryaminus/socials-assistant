@@ -1,11 +1,11 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server-card.schema.json",
   "experimental-ext-server-card": true,
-  "version": "0.2.0",
+  "version": "0.4.0",
   "name": "socials-assistant",
   "description": "Creator analytics vault. Pull your own TikTok/Instagram/Facebook/YouTube analytics into a permanent history vault, digest weekly performance, draft brand outreach from verified numbers.",
   "url": "https://socials-mcp.YOURDOMAIN.workers.dev/mcp",
-  "icon": "https://github.com/aryaminus/socials-assistant/raw/main/docs/icon.svg",
+  "icon": "https://raw.githubusercontent.com/aryaminus/socials-assistant/main/.claude-plugin/icon.png",
   "servers": [
     {
       "transport": "streamable-http",

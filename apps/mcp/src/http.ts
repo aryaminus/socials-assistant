@@ -63,7 +63,20 @@ export async function runHttpServer(port: number): Promise<void> {
     }
 
     if (req.method === "POST") {
-      const body = await readBody(req);
+      let body: unknown;
+      try {
+        body = await readBody(req);
+      } catch (e: unknown) {
+        const err = e as { status?: number; message?: string };
+        if (err.status === 413) {
+          res.writeHead(413, { "content-type": "application/json" });
+          res.end(JSON.stringify({ error: err.message }));
+          return;
+        }
+        res.writeHead(400, { "content-type": "application/json" });
+        res.end(JSON.stringify({ error: err.message ?? "bad request" }));
+        return;
+      }
       try {
         const vault = openVault();
         const server = buildServer(vault);
@@ -99,7 +112,17 @@ export async function runHttpServer(port: number): Promise<void> {
 function readBody(req: IncomingMessage): Promise<unknown> {
   return new Promise((resolve, reject) => {
     const chunks: Buffer[] = [];
-    req.on("data", (c: Buffer) => chunks.push(c));
+    let totalBytes = 0;
+    const MAX_BYTES = 1_048_576; // 1 MB
+    req.on("data", (c: Buffer) => {
+      totalBytes += c.length;
+      if (totalBytes > MAX_BYTES) {
+        req.destroy();
+        reject({ status: 413, message: "payload_too_large" });
+        return;
+      }
+      chunks.push(c);
+    });
     req.on("end", () => {
       const raw = Buffer.concat(chunks).toString("utf8");
       if (!raw) return resolve(undefined);
