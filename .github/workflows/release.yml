@@ -215,6 +215,10 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
+
+          # Ensure .npmrc has the auth token
+          echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > ~/.npmrc
+
           pnpm install --frozen-lockfile=true
           pnpm exec tsc -b packages/shared packages/vault packages/connectors apps/mcp
 
