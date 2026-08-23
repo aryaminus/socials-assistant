@@ -64,6 +64,9 @@ Note: `apps/mcp/dist-bundle/` is gitignored (built by prepack/publish); never co
 | `SOCIALS_TIKTOK_CLIENT_KEY/SECRET` | config file | TikTok app credentials |
 | `SOCIALS_MCP_PORT` | `3344` | HTTP mode port |
 | `SOCIALS_MCP_TOKEN` | unset | Bearer token for HTTP mode (set for non-local use) |
+| `SOCIALS_ALLOWED_ORIGINS` | unset | Comma-separated allowed origins for HTTP mode |
+| `SOCIALS_OAUTH_PORT` | `8399` | Local OAuth callback port |
+| `SOCIALS_CSV_DIR` | `~/Downloads` | TikTok CSV auto-discovery search path |
 | `SOCIALS_ALLOW_SEND` | unset | **Outreach safety:** must be set before ANY send automation |
 | `DIGEST_TO/FROM`, `RESEND_API_KEY` | unset | Weekly digest self-email |
 
