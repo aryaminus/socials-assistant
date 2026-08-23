@@ -3,7 +3,7 @@ import { z } from "zod";
 import { readFileSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { openVault, Vault, importTiktokCsv, digestData, mediaKitData, comparePeriods, topContent, audienceOverview, vaultQuery } from "@socials/vault";
+import { openVault, Vault, importTiktokCsv, digestData, mediaKitData, comparePeriods, topContent, audienceOverview, vaultQuery, getProfile, setProfile, pipelineAdd, pipelineList, pipelineUpdate, PIPELINE_STAGES, discoverTiktokCsv } from "@socials/vault";
 import {
   loadAppConfig, connectYoutube, connectMeta, connectTiktok,
   snapshotYoutube, snapshotMeta, snapshotTiktok,
@@ -11,7 +11,7 @@ import {
 } from "@socials/connectors";
 import { isPlatform, type NormalizedSnapshot, type Platform } from "@socials/shared";
 
-export const VERSION = "0.2.0";
+export const VERSION = "0.3.0";
 
 // ---------------------------------------------------------------------------
 // config file (env vars win over file)
@@ -80,7 +80,7 @@ export function buildServer(vault: Vault): McpServer {
     { name: "socials-mcp", version: VERSION },
     {
       instructions:
-        "Socials Assistant: your creator analytics vault. Connect platforms once (connect_youtube / connect_meta / connect_tiktok), run `snapshot` weekly (history accrues), import TikTok Studio CSVs for retention/traffic data, then use digest_data / top_content / media_kit_data / compare_periods to reason about real numbers. Outreach is draft-first: log drafts in outreach_log_*; never send without explicit human approval. Never fabricate metrics — if the vault lacks data, say so and suggest snapshot/import.",
+        "Socials Assistant: your creator analytics vault. Connect platforms once (connect_youtube / connect_meta / connect_tiktok), run `snapshot` weekly (history accrues), import_tiktok_csv weekly for TikTok retention/traffic data. Read profile_get FIRST so niche-sensitive work (scripts, pitches, media kits) matches this creator. Track production in pipeline_* and pitches in outreach_log_*; outreach is draft-first — never send without explicit human approval. Never fabricate metrics — if the vault lacks data, say so and suggest snapshot/import.",
     }
   );
 
@@ -266,9 +266,11 @@ export function buildServer(vault: Vault): McpServer {
 
   server.tool(
     "import_tiktok_csv",
-    "Import a TikTok Studio CSV export (video stats / follower / profile views). This is the ONLY compliant source of retention, watch time, reach, and traffic data for TikTok — export weekly from TikTok Studio → Analytics, then point this tool at the file.",
-    { path: z.string().describe("Absolute path to the exported CSV file") },
-    async ({ path }) => {
+    "Import a TikTok Studio CSV export (video stats / follower / profile views). This is the ONLY compliant source of retention, watch time, reach, and traffic data for TikTok — export weekly from TikTok Studio → Analytics. Omit path to auto-discover the newest export in ~/Downloads.",
+    { path: z.string().optional().describe("Path to the exported CSV (omit to auto-discover the newest in ~/Downloads)") },
+    async ({ path: rawPath }) => {
+      const path = rawPath ?? discoverTiktokCsv();
+      if (!path) return err({ error: "no_csv_found", fix: "Export from TikTok Studio → Analytics (video stats, last 7 days), save it, then call again — or pass the path explicitly." });
       if (!existsSync(path)) return err({ error: "file_not_found", fix: "Check the absolute path to the TikTok Studio export.", path });
       let result;
       try {
@@ -405,6 +407,94 @@ export function buildServer(vault: Vault): McpServer {
         )
         .run(status ?? null, notes ?? null, thread_ref ?? null, status ?? "", new Date().toISOString(), id);
       return text({ id, updated: true });
+    }
+  );
+
+
+  // ------------------- creator profile (per-installation tuning) -------------------
+
+  server.tool(
+    "profile_get",
+    "Read the creator profile (niche, tone, series, rate floor, goals, keywords) that tunes all skills to this specific creator. Skills MUST read this before niche-sensitive work (scripts, pitches, media kits). Empty profile → offer to build it: auto-fill from vault data + a few questions.",
+    {},
+    async () => {
+      const profile = getProfile(vault);
+      const hasAny = Object.keys(profile).some((k) => k !== "updated_at");
+      return text(hasAny ? profile : { profile, hint: "Profile is empty. Ask the creator 4 questions (niche? tone? goals? rate floor?) and set with profile_set; audience/series facts can be auto-derived from audience_overview and top_content." });
+    }
+  );
+
+  server.tool(
+    "profile_set",
+    "Create or update the creator profile (partial merge — only provided fields change). This is how a generic install becomes tuned to one creator.",
+    {
+      name: z.string().optional(),
+      niche: z.string().optional().describe("What the creator makes content about, free text"),
+      tone_notes: z.string().optional().describe("Voice/style scripts and pitches should match"),
+      content_series: z.array(z.object({ name: z.string(), note: z.string().optional() })).optional(),
+      audience_summary: z.string().optional(),
+      brand_categories: z.array(z.string()).optional().describe("Brand categories that fit this audience"),
+      past_collaborations: z.array(z.object({ brand: z.string(), note: z.string().optional() })).optional(),
+      rate_floor: z.number().optional().describe("Minimum acceptable rate — pitches never go below"),
+      goals: z.array(z.string()).optional(),
+      keywords: z.array(z.string()).optional().describe("SEO seed words for titles/captions"),
+    },
+    async (patch) => text(setProfile(vault, patch))
+  );
+
+  // ------------------- content pipeline (script → review → green light → post → measured) -------------------
+
+  server.tool(
+    "pipeline_add",
+    "Add a content idea or deliverable to the creator's pipeline (idea → scripting → script_review → brand_review → approved → posted → measured). Use for anything moving through production, especially sponsored deliverables awaiting a brand green light.",
+    {
+      title: z.string(),
+      platform: z.string().optional().describe("youtube | instagram | facebook | tiktok"),
+      brand: z.string().optional().describe("Sponsoring brand, if this is a paid deliverable"),
+      outreach_id: z.number().int().optional().describe("Linked outreach_log entry"),
+      stage: z.enum(["idea", "scripting", "script_review", "brand_review", "approved", "posted", "measured", "on_hold", "dropped"]).default("idea"),
+      due_date: z.string().optional().describe("YYYY-MM-DD"),
+      script_path: z.string().optional(),
+      brief: z.string().optional().describe("Requirements / what this deliverable is"),
+      notes: z.string().optional(),
+    },
+    async (a) => text(pipelineAdd(vault, a))
+  );
+
+  server.tool(
+    "pipeline_list",
+    "List pipeline items (the creator's production calendar), optionally filtered by stage. Ordered by due date.",
+    { stage: z.string().optional() },
+    async ({ stage }) => {
+      if (stage && !PIPELINE_STAGES.includes(stage as never)) {
+        return err({ error: "invalid_stage", fix: `Valid stages: ${PIPELINE_STAGES.join(", ")}` });
+      }
+      return text(pipelineList(vault, stage));
+    }
+  );
+
+  server.tool(
+    "pipeline_update",
+    "Move a pipeline item along (e.g. script_review → brand_review → approved → posted → measured) or edit fields. After posting, set stage=posted with post_url; the weekly rhythm later marks measured.",
+    {
+      id: z.number().int(),
+      stage: z.enum(["idea", "scripting", "script_review", "brand_review", "approved", "posted", "measured", "on_hold", "dropped"]).optional(),
+      due_date: z.string().optional(),
+      script_path: z.string().optional(),
+      post_url: z.string().optional(),
+      posted_at: z.string().optional(),
+      brief: z.string().optional(),
+      notes: z.string().optional(),
+      brand: z.string().optional(),
+    },
+    async ({ id, ...patch }) => {
+      try {
+        const item = pipelineUpdate(vault, id, patch);
+        if (!item) return err({ error: "not_found", fix: "pipeline_list to find the id.", id });
+        return text(item);
+      } catch (e) {
+        return err({ error: (e as Error).message });
+      }
     }
   );
 

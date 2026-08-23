@@ -60,8 +60,20 @@ check("connection_status succeeds", status.isError !== true);
 const parsed = JSON.parse((status.content as Array<{ text: string }>)[0].text);
 check("connection_status JSON parses", typeof parsed === "object");
 
-// 5. row cap note exists in vault_query description or behavior (informational)
-check("15-tool focused surface", a.tools.length === 15, `${a.tools.length}`);
+// 5. profile + pipeline contract
+const pset = await client.callTool({ name: "profile_set", arguments: { niche: "test niche", rate_floor: 50 } });
+check("profile_set succeeds", pset.isError !== true);
+const pget = await client.callTool({ name: "profile_get", arguments: {} });
+const profile = JSON.parse((pget.content as Array<{ text: string }>)[0].text);
+check("profile roundtrip", (profile.profile ?? profile)?.niche === "test niche");
+const padd = await client.callTool({ name: "pipeline_add", arguments: { title: "audit item", stage: "idea" } });
+const item = JSON.parse((padd.content as Array<{ text: string }>)[0].text);
+check("pipeline_add returns item", item.stage === "idea" && item.id > 0);
+const pbad = await client.callTool({ name: "pipeline_update", arguments: { id: item.id, stage: "bogus" } });
+check("pipeline invalid stage → isError", pbad.isError === true);
+const pdone = await client.callTool({ name: "pipeline_update", arguments: { id: item.id, stage: "dropped" } });
+check("pipeline_update valid", pdone.isError !== true);
+check("20-tool focused surface", a.tools.length === 20, `${a.tools.length}`);
 
 // 6. version sync: package.json ↔ server VERSION ↔ server.json ↔ plugin.json
 const pkg = JSON.parse(readFileSync(join(here, "..", "apps", "mcp", "package.json"), "utf8"));

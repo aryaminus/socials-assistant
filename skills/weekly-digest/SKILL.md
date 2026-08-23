@@ -10,7 +10,8 @@ Reads ONLY real vault data via `socials-mcp` tools. Never invent or estimate num
 
 ## Steps
 
-1. Call `socials-mcp:digest_data` with `days: 7`. Add `socials-mcp:compare_periods` for metrics the user cares about (views, followers_gained, reach).
+1. Call `socials-mcp:profile_get` (cheap) — niche and goals frame the "do next week" actions; skip silently if empty.
+2. Call `socials-mcp:digest_data` with `days: 7`. Add `socials-mcp:compare_periods` for metrics the user cares about (views, followers_gained, reach).
 2. Call `socials-mcp:top_content` (`days: 14`, limit 10) and `socials-mcp:audience_overview` for color.
 3. Compose the digest:
 

@@ -39,7 +39,7 @@ Focused on one loop: **own-analytics vault → insight → outreach**. The full 
 
 Then add the MCP server to your agent (see [agents/](agents/README.md)) and ask things like:
 
-> *"Snapshot my accounts, then give me this week's digest and draft a pitch to a Kathmandu bookstore using my real engagement numbers."*
+> *"Snapshot my accounts, then give me this week's digest and draft a pitch to three brands that fit my audience using my real numbers."*
 
 ## What's inside
 
@@ -62,8 +62,10 @@ docs/            per-platform OAuth onboarding, Cloudflare hosting, automation, 
 |---|---|
 | `connect_youtube` / `connect_meta` / `connect_tiktok` | Browser OAuth, stores encrypted tokens (Meta flow covers Instagram + Facebook together) |
 | `connection_status` | Which accounts are connected, token health |
+| `profile_get` / `profile_set` | The creator profile (niche, tone, rate floor, goals) — how a generic install tunes itself to one creator |
 | `snapshot` | Pull all platforms → vault (run weekly; history accrues) |
-| `import_tiktok_csv` | Ingest TikTok Studio CSV exports (video stats, follower, profile) |
+| `import_tiktok_csv` | Ingest TikTok Studio CSV exports — **auto-discovers the newest export in ~/Downloads; path optional** |
+| `pipeline_add` / `pipeline_list` / `pipeline_update` | Production calendar: idea → scripting → script_review → brand_review → approved → posted → measured |
 | `vault_query` | Safe read-only SQL over the vault |
 | `compare_periods` | Metric deltas: this week vs last, this month vs last |
 | `top_content` | Best/worst videos by any metric in a window |
@@ -83,14 +85,16 @@ docs/            per-platform OAuth onboarding, Cloudflare hosting, automation, 
 | Audience demographics | API | API | API (Page) | **CSV** (partial) |
 | Search terms / followers-by-hour | — | — | — | **CSV** |
 
-TikTok's official APIs never expose Studio-only fields. Weekly CSV export from TikTok Studio (≈5 min) is the compliant path — `import_tiktok_csv` handles the rest. We deliberately do **not** scrape or automate your logged-in Studio session (ToS + account risk).
+TikTok's official APIs never expose Studio-only fields — no connector anywhere can change that. Weekly CSV export from TikTok Studio (≈5 min) is the compliant path, and `import_tiktok_csv` makes it one command: it **auto-finds the newest export in your Downloads folder** (or set `SOCIALS_CSV_DIR`). We deliberately do **not** scrape or automate your logged-in Studio session (ToS + account risk).
 
 ## Skills
 
 Each skill in [skills/](skills/) is a portable `SKILL.md` that works in Claude Code, opencode, Codex, and other skill-aware agents. They read **only real vault data** — never invent metrics.
 
-- **socials-connect** — step-by-step OAuth onboarding for all three platform apps
+- **socials-connect** — step-by-step OAuth onboarding for all three platform apps + profile bootstrap
 - **weekly-digest** — cross-platform scorecard with wins/losses/next actions
+- **script-review** — scores scripts against the creator's own proven hooks/retention/SEO before production or brand submission
+- **publish-package** — brand green light → title/caption/hashtags/best-time package → post-post measurement vs baseline
 - **brand-outreach** — pitch drafting from verified numbers, draft-first, daily send caps
 - **media-kit** — always-fresh media kit generated from the vault
 

@@ -19,7 +19,7 @@ Why brands' replies land in spam — and how to prevent yours from vanishing. Ap
 ## Content rules that survive 2026 filters
 
 - Plain-text or minimal HTML, <150 words, one link, no tracking pixels in first emails.
-- Personalize the first line (their campaign, their store, their book) — filters and humans both check.
+- Personalize the first line (their campaign, their store, their product) — filters and humans both check.
 - No attachments in first contact — link the media kit instead.
 - A clear opt-out ("if this isn't relevant, tell me and I won't follow up").
 

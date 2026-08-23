@@ -34,3 +34,24 @@ Hi {FirstName} — floating this back up in case it got buried. The {format} ide
 - Mention ONE number per claim, always with its window.
 - Personalize the first line with something specific to the brand (their campaign, their store, their product launch).
 - Plain-text style; skip heavy HTML, tracking pixels, and multiple links.
+
+## Sponsored-content review request (after script approval flow)
+
+When a script is done and needs the brand's green light (see the script-review skill):
+
+```
+Subject: {Creator} × {Brand} — script for your approval
+
+Hi {FirstName},
+
+The script for our collaboration is ready: {one-line concept}.
+
+What you'll see: {hook summary} · {brand placement in one sentence} · disclosure (#ad) as agreed.
+
+Full script attached — happy to adjust wording, placement, or claims. Once you give the green light, I'll record and share the draft for a final look before posting.
+
+Anything you'd like changed?
+{Name}
+```
+
+Rules: attach the script here (brands expect it); state the disclosure plainly; offer one revision round max unless the brief says otherwise.

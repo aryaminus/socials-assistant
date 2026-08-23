@@ -1,11 +1,11 @@
 {
   "name": "socials-mcp",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Creator analytics MCP server \u2014 TikTok/Instagram/Facebook/YouTube vault, weekly digests, and brand-outreach support. Local SQLite vault, official APIs only.",
   "license": "MIT",
   "type": "module",
   "bin": {
-    "socials-mcp": "bin/socials-mcp.js"
+    "socials-mcp": "dist-bundle/socials-mcp.js"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -16,12 +16,11 @@
     }
   },
   "scripts": {
-    "build": "tsc -b"
+    "build": "tsc -b",
+    "bundle": "tsc -b && tsx ../../scripts/bundle.ts",
+    "prepack": "tsc -b && tsx ../../scripts/bundle.ts"
   },
   "dependencies": {
-    "@socials/connectors": "workspace:*",
-    "@socials/shared": "workspace:*",
-    "@socials/vault": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.12.0",
     "zod": "^3.24.0"
   },
@@ -43,5 +42,16 @@
     "facebook",
     "outreach",
     "model-context-protocol"
-  ]
+  ],
+  "files": [
+    "bin",
+    "dist-bundle",
+    "README.md",
+    "LICENSE"
+  ],
+  "devDependencies": {
+    "@socials/shared": "workspace:*",
+    "@socials/vault": "workspace:*",
+    "@socials/connectors": "workspace:*"
+  }
 }

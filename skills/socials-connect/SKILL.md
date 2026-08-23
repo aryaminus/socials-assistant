@@ -31,6 +31,10 @@ Goal: all of the user's platforms connected to the `socials-mcp` vault through o
 2. For TikTok depth: ask for their weekly TikTok Studio export (Studio → Analytics → export video-stats CSV), then call `socials-mcp:import_tiktok_csv` with the path. Explain why: retention, traffic sources, search terms, and follower-hours are Studio-only — no official API exposes them; CSV is the compliant path.
 3. Verify with `socials-mcp:top_content` (`days: 7`).
 
+## Finish: build the creator profile
+
+After the first snapshot, offer to build the tuning profile (`socials-mcp:profile_get` → if empty): auto-fill audience_summary from `socials-mcp:audience_overview` and content_series from `socials-mcp:top_content` patterns, then ask only the 4 human-only questions — niche, tone, goals, rate floor — and save with `socials-mcp:profile_set`. This is what makes every other skill sound like it knows the creator.
+
 ## Weekly rhythm to establish
 
 - `socials-mcp:snapshot` once a week — history accrues forever in the vault

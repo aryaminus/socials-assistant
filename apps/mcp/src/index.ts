@@ -78,11 +78,13 @@ async function main(): Promise<void> {
   }
 
   if (cmd === "import") {
-    const file = args[1];
+    const { discoverTiktokCsv } = await import("@socials/vault");
+    const file = args[1] ?? discoverTiktokCsv();
     if (!file) {
-      console.error("usage: socials-mcp import <tiktok-studio.csv>");
+      console.error("No TikTok Studio CSV found in ~/Downloads. Export from TikTok Studio → Analytics first, or pass a path: socials-mcp import <file.csv>");
       process.exit(1);
     }
+    console.error(`[socials] importing: ${file}`);
     const vault = openVault();
     const { importTiktokCsv } = await import("@socials/vault");
     const result = importTiktokCsv(file, { fromFile: true });

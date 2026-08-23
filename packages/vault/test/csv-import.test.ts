@@ -29,7 +29,7 @@ test("video stats import: canonical metrics, hms avg watch, dedupe by video", ()
   assert.equal(result.videos, 3);
 
   const ep2 = result.snapshot.videos.find((v) => v.platformVideoId === "7309876543210987654")!;
-  assert.equal(ep2.title, "Kaiser Library — the oldest reading room (Ep2)");
+  assert.equal(ep2.title, "The oldest spot in town (Ep2)");
   assert.equal(ep2.metrics.views, 372100);
   assert.equal(ep2.metrics.likes, 18500);
   assert.equal(ep2.metrics.comments, 2100);

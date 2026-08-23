@@ -3,7 +3,7 @@
   "name": "io.github.aryaminus/socials-assistant",
   "display_name": "Socials Assistant",
   "description": "Creator analytics vault. Pull your own TikTok/Instagram/Facebook/YouTube analytics into a permanent local history vault, digest weekly performance, and draft brand outreach from verified numbers.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "homepage": "https://github.com/aryaminus/socials-assistant",
   "repository": {
     "url": "https://github.com/aryaminus/socials-assistant",
@@ -16,34 +16,107 @@
       "url": "https://github.com/aryaminus"
     }
   ],
-  "categories": ["social-media", "analytics", "marketing"],
+  "categories": [
+    "social-media",
+    "analytics",
+    "marketing"
+  ],
   "tools": [
-    { "name": "connection_status", "description": "Connected social accounts, token health, vault history depth." },
-    { "name": "connect_youtube", "description": "Connect YouTube via Google OAuth (browser flow)." },
-    { "name": "connect_meta", "description": "Connect Instagram + Facebook Page via one Meta OAuth flow." },
-    { "name": "connect_tiktok", "description": "Connect TikTok via official Display API OAuth." },
-    { "name": "snapshot", "description": "Pull fresh analytics from all connected platforms into the vault." },
-    { "name": "import_tiktok_csv", "description": "Import a TikTok Studio CSV export (retention/watch-time/traffic data)." },
-    { "name": "vault_query", "description": "Read-only SQL over the analytics vault." },
-    { "name": "compare_periods", "description": "Metric deltas: last N days vs prior N days, per platform and overall." },
-    { "name": "top_content", "description": "Best or worst content by any metric across platforms." },
-    { "name": "audience_overview", "description": "Audience demographics from the latest snapshot per platform." },
-    { "name": "digest_data", "description": "Structured weekly-digest payload across platforms." },
-    { "name": "media_kit_data", "description": "Verified numbers for media kits and brand pitches." },
-    { "name": "outreach_log_add", "description": "Log a drafted brand pitch." },
-    { "name": "outreach_log_list", "description": "List outreach attempts by status." },
-    { "name": "outreach_log_update", "description": "Update an outreach attempt's status or notes." }
+    {
+      "name": "connection_status",
+      "description": "Connected social accounts, token health, vault history depth."
+    },
+    {
+      "name": "connect_youtube",
+      "description": "Connect YouTube via Google OAuth (browser flow)."
+    },
+    {
+      "name": "connect_meta",
+      "description": "Connect Instagram + Facebook Page via one Meta OAuth flow."
+    },
+    {
+      "name": "connect_tiktok",
+      "description": "Connect TikTok via official Display API OAuth."
+    },
+    {
+      "name": "snapshot",
+      "description": "Pull fresh analytics from all connected platforms into the vault."
+    },
+    {
+      "name": "import_tiktok_csv",
+      "description": "Import a TikTok Studio CSV export (retention/watch-time/traffic data)."
+    },
+    {
+      "name": "vault_query",
+      "description": "Read-only SQL over the analytics vault."
+    },
+    {
+      "name": "compare_periods",
+      "description": "Metric deltas: last N days vs prior N days, per platform and overall."
+    },
+    {
+      "name": "top_content",
+      "description": "Best or worst content by any metric across platforms."
+    },
+    {
+      "name": "audience_overview",
+      "description": "Audience demographics from the latest snapshot per platform."
+    },
+    {
+      "name": "digest_data",
+      "description": "Structured weekly-digest payload across platforms."
+    },
+    {
+      "name": "media_kit_data",
+      "description": "Verified numbers for media kits and brand pitches."
+    },
+    {
+      "name": "outreach_log_add",
+      "description": "Log a drafted brand pitch."
+    },
+    {
+      "name": "outreach_log_list",
+      "description": "List outreach attempts by status."
+    },
+    {
+      "name": "outreach_log_update",
+      "description": "Update an outreach attempt's status or notes."
+    },
+    {
+      "name": "profile_get",
+      "description": "Read the creator profile that tunes skills to this creator."
+    },
+    {
+      "name": "profile_set",
+      "description": "Create/update the creator profile (niche, tone, rate floor, goals)."
+    },
+    {
+      "name": "pipeline_add",
+      "description": "Add a content idea/deliverable to the production pipeline."
+    },
+    {
+      "name": "pipeline_list",
+      "description": "List pipeline items (production calendar) by stage."
+    },
+    {
+      "name": "pipeline_update",
+      "description": "Move a pipeline item along (script_review \u2192 brand_review \u2192 approved \u2192 posted \u2192 measured)."
+    }
   ],
   "installation": {
     "type": "node",
     "command": "node",
-    "args": ["apps/mcp/bin/socials-mcp.js"],
-    "dependencies": ["node>=22.5"],
+    "args": [
+      "apps/mcp/bin/socials-mcp.js"
+    ],
+    "dependencies": [
+      "node>=22.5"
+    ],
     "requirements": "Build with pnpm after clone: pnpm install && pnpm build"
   },
   "remote": {
     "transport": "streamable-http",
     "url": "https://socials-mcp.YOURDOMAIN.workers.dev/mcp",
-    "note": "Self-host the Cloudflare Worker from infra/worker — see docs/hosting-cloudflare.md"
+    "note": "Self-host the Cloudflare Worker from infra/worker \u2014 see docs/hosting-cloudflare.md"
   }
 }

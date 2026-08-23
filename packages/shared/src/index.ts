@@ -45,7 +45,7 @@ export interface RetentionPoint {
   ratio: number;
 }
 
-/** One audience slice, e.g. dimension="country" key="Nepal" value=0.68 */
+/** One audience slice, e.g. dimension="country" key="Exampleland" value=0.68 */
 export interface AudienceSlice {
   dimension: string; // age | gender | country | city | source | hour
   key: string;

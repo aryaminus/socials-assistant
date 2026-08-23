@@ -14,8 +14,11 @@ license: MIT
 
 ## Pipeline
 
+### 0. Read the creator profile
+Call `socials-mcp:profile_get` first: niche, audience summary, brand_categories, rate_floor, past_collaborations drive targeting and pricing. If empty, build it with the user (audience facts auto-fill from `socials-mcp:audience_overview`).
+
 ### 1. Target selection (help the user think)
-Rank targets by audience–product fit: brands whose customers look like the creator's audience demographics (country/age from `socials-mcp:audience_overview`). Natural segments: local businesses in the creator's top geo, category brands matching the content niche, and international brands entering that market. Research each brand's marketing contact name before drafting — never "Dear Sir/Madam".
+Rank targets by audience–product fit: brands whose customers look like the creator's audience demographics (country/age from `socials-mcp:audience_overview` + profile brand_categories). Prefer profile.past_collaborations categories — repeat sponsors convert best. Research each brand's marketing contact name before drafting — never "Dear Sir/Madam".
 
 ### 2. Pull verified numbers
 Call `socials-mcp:media_kit_data`. Extract: followers per platform, 30-day views, avg engagement rate, top 3 videos, audience highlights.

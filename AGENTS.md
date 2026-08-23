@@ -59,7 +59,7 @@ Platform credentials persist (encrypted) in `$SOCIALS_DATA_DIR/config.json` + va
 - Local/LAN HTTP: `node apps/mcp/bin/socials-mcp.js --http` → `POST /mcp` (+ `/health`, `/version`)
 - Remote: deploy `infra/worker` (Cloudflare, OAuth 2.1 + DCR) — per-user encrypted token store in D1
 
-Tool inventory (15): `connection_status · connect_youtube · connect_meta · connect_tiktok · snapshot · import_tiktok_csv · vault_query · compare_periods · top_content · audience_overview · digest_data · media_kit_data · outreach_log_add · outreach_log_list · outreach_log_update`
+Tool inventory (20): `connection_status · connect_youtube · connect_meta · connect_tiktok · snapshot · import_tiktok_csv · vault_query · compare_periods · top_content · audience_overview · digest_data · media_kit_data · profile_get · profile_set · pipeline_add · pipeline_list · pipeline_update · outreach_log_add · outreach_log_list · outreach_log_update`
 
 Errors return as tool results (`isError: true`) with a `fix:` hint — agents should read and self-correct rather than retry blindly. Results are capped (500 rows) to respect agent context limits.
 

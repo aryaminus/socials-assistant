@@ -12,3 +12,9 @@ export {
 } from "./queries.js";
 export type { PeriodComparison, TopContentRow, DigestData, MediaKitData } from "./queries.js";
 export { importTiktokCsv, detectTiktokCsvKind, type TiktokCsvImportResult } from "./importers/tiktok-csv.js";
+export {
+  getProfile, setProfile, pipelineAdd, pipelineGet, pipelineList, pipelineUpdate,
+  PIPELINE_STAGES,
+} from "./profile.js";
+export type { CreatorProfile, PipelineItem, PipelineStage } from "./profile.js";
+export { discoverTiktokCsv } from "./importers/discover.js";
