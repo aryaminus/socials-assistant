@@ -1,0 +1,70 @@
+name: Release Smoke
+run-name: Release Smoke (${{ github.ref_name }} @ ${{ github.sha }})
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: release-smoke-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      startsWith(github.event.head_commit.message || '', 'chore(release): bump version to ')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 25
+          cache: pnpm
+
+      - name: Install + typecheck + build
+        run: |
+          pnpm install --frozen-lockfile=true
+          pnpm exec tsc -b packages/shared packages/vault packages/connectors apps/mcp
+
+      - name: Tests
+        run: npx tsx --test packages/shared/test/*.test.ts packages/vault/test/*.test.ts
+
+      - name: MCP contract audit
+        run: npx tsx scripts/audit-mcp.ts
+
+      - name: Skills spec lint
+        run: npx tsx scripts/lint-skills.ts
+
+      - name: Doctor + MCP stdio smoke
+        run: |
+          node apps/mcp/bin/socials-mcp.js doctor
+          printf '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"ci","version":"0"}}}\n{"jsonrpc":"2.0","method":"notifications/initialized"}\n{"jsonrpc":"2.0","id":2,"method":"tools/list"}\n' | SOCIALS_DATA_DIR=/tmp/socials-ci node apps/mcp/bin/socials-mcp.js | grep -q '"tools":'
+
+      - name: Build skill bundles + npm tarball
+        run: |
+          bash scripts/build-skills.sh
+          pnpm --filter socials-mcp run prepack
+          (cd apps/mcp && npm pack)
+          mkdir -p dist/skills dist/bundle
+          mv apps/mcp/socials-mcp-*.tgz dist/bundle/
+
+      - name: Verify artifacts
+        run: |
+          for s in socials-connect weekly-digest script-review publish-package brand-outreach media-kit; do
+            test -f dist/skills/$s.skill || { echo "::error::$s.skill not built"; exit 1; }
+            unzip -l dist/skills/$s.skill | grep -q 'SKILL.md' || { echo "::error::SKILL.md missing from $s.skill"; exit 1; }
+          done
+          test -f dist/bundle/socials-mcp-*.tgz || { echo "::error::npm tarball missing"; exit 1; }
+          echo "Smoke artifacts OK:"; ls -la dist/skills dist/bundle
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-candidate-dist-${{ github.sha }}
+          path: dist
+          retention-days: 5

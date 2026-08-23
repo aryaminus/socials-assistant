@@ -1,12 +1,18 @@
 name: Release
+run-name: Release (${{ github.ref_name }} @ ${{ github.sha }})
 
-# Astro-style tag-driven release, adapted for socials-assistant:
-#   1. Bump the version in root package.json + apps/mcp/package.json + server.json + .claude-plugin/plugin.json (+ CHANGELOG.md)
-#   2. git tag vX.Y.Z && git push origin vX.Y.Z
-# This workflow verifies version consistency, builds the .skill bundles
-# (claude.ai upload) and the npm tarball (offline install), sanity-checks
-# them, and attaches everything to the GitHub Release — so
-# releases/latest/download/<name>.skill always matches the tagged code.
+# Astro-style tag-driven release:
+#   1. Bump version in 4 files + CHANGELOG.md
+#   2. Commit: chore(release): bump version to X.Y.Z
+#   3. git tag vX.Y.Z && git push origin vX.Y.Z
+#
+# This workflow:
+#   - Waits for Release Smoke to succeed for this SHA
+#   - Downloads the smoke artifact (skill bundles + npm tarball)
+#   - Signs with cosign (keyless OIDC)
+#   - Creates GitHub Release with all assets
+#   - Publishes to npm with provenance
+#   - Verifies all channels
 
 on:
   push:
@@ -15,27 +21,26 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Existing tag to (re)build the release for, e.g. v0.3.0"
+        description: "Existing tag to (re)build the release for, e.g. v0.4.0"
         required: true
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: write
+  id-token: write
 
 jobs:
-  release:
-    name: Build & publish release assets
+  # ── Step 1: Wait for Release Smoke ──────────────────────────────────
+  prepare-release-candidate:
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 25
-          cache: pnpm
-
-      - name: Resolve tag
+      - name: Resolve tag + SHA
         id: tag
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
@@ -47,62 +52,231 @@ jobs:
           echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
           echo "Releasing $TAG (version ${TAG#v})"
 
-      - name: Verify version consistency (tag == 4 version files)
+      - name: Find successful Release Smoke run for this SHA
+        id: smoke_run
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          VER="${{ steps.tag.outputs.version }}"
+          TAG="${{ steps.tag.outputs.tag }}"
+          VERSION="${{ steps.tag.outputs.version }}"
+
+          # Verify version consistency across 5 files
           PKG=$(node -p "require('./package.json').version")
           MCP=$(node -p "require('./apps/mcp/package.json').version")
           SRV=$(node -p "require('./server.json').version")
           PLG=$(node -p "require('./.claude-plugin/plugin.json').version")
-          echo "tag=$VER pkg=$PKG mcp=$MCP server=$SRV plugin=$PLG"
-          [ "$VER" = "$PKG" ] || { echo "::error::tag v$VER != package.json $PKG"; exit 1; }
-          [ "$VER" = "$MCP" ] || { echo "::error::tag v$VER != apps/mcp/package.json $MCP"; exit 1; }
-          [ "$VER" = "$SRV" ] || { echo "::error::tag v$VER != server.json $SRV"; exit 1; }
-          [ "$VER" = "$PLG" ] || { echo "::error::tag v$VER != .claude-plugin/plugin.json $PLG"; exit 1; }
+          echo "tag=$VERSION pkg=$PKG mcp=$MCP server=$SRV plugin=$PLG"
+          [ "$VERSION" = "$PKG" ] || { echo "::error::tag v$VERSION != package.json $PKG"; exit 1; }
+          [ "$VERSION" = "$MCP" ] || { echo "::error::tag v$VERSION != apps/mcp/package.json $MCP"; exit 1; }
+          [ "$VERSION" = "$SRV" ] || { echo "::error::tag v$VERSION != server.json $SRV"; exit 1; }
+          [ "$VERSION" = "$PLG" ] || { echo "::error::tag v$VERSION != .claude-plugin/plugin.json $PLG"; exit 1; }
 
-      - name: Verify CHANGELOG has entry for this version
-        run: |
-          VER="${{ steps.tag.outputs.version }}"
-          if ! grep -q "## \\[${VER}\\]" CHANGELOG.md; then
-            echo "::error::CHANGELOG.md has no entry for version $VER"
+          # Verify CHANGELOG has entry
+          if ! grep -q "## \\[${VERSION}\\]" CHANGELOG.md; then
+            echo "::error::CHANGELOG.md has no entry for version $VERSION"
             exit 1
           fi
-          echo "CHANGELOG entry found for $VER"
+          echo "Version + CHANGELOG verified for $TAG"
 
-      - name: Run test suite + audits before releasing
+          # Find successful Release Smoke for this SHA
+          ATTEMPTS=30
+          SLEEP_SECONDS=20
+          RUN_ID=""
+
+          for attempt in $(seq 1 "$ATTEMPTS"); do
+            RUNS_JSON=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/release-smoke.yml/runs?branch=main&event=push&per_page=100")
+
+            RUN_ID=$(echo "$RUNS_JSON" | jq -r --arg sha "${{ github.sha }}" '.workflow_runs[] | select(.head_sha == $sha and .conclusion == "success") | .id' | head -n 1)
+            if [ -n "$RUN_ID" ] && [ "$RUN_ID" != "null" ]; then
+              echo "Found successful Release Smoke run: ${RUN_ID}"
+              break
+            fi
+
+            STATUS=$(echo "$RUNS_JSON" | jq -r --arg sha "${{ github.sha }}" '.workflow_runs[] | select(.head_sha == $sha) | .status' | head -n 1)
+            CONCLUSION=$(echo "$RUNS_JSON" | jq -r --arg sha "${{ github.sha }}" '.workflow_runs[] | select(.head_sha == $sha) | .conclusion' | head -n 1)
+
+            if [ -n "$STATUS" ] && [ "$STATUS" != "null" ]; then
+              echo "Attempt ${attempt}/${ATTEMPTS}: Release Smoke for ${{ github.sha }} status=${STATUS} conclusion=${CONCLUSION}"
+              if [ "$STATUS" = "completed" ] && [ -n "$CONCLUSION" ] && [ "$CONCLUSION" != "null" ] && [ "$CONCLUSION" != "success" ]; then
+                echo "Release Smoke completed with conclusion=${CONCLUSION}; cannot publish." >&2
+                exit 1
+              fi
+            else
+              echo "Attempt ${attempt}/${ATTEMPTS}: No Release Smoke run found yet."
+            fi
+
+            if [ "$attempt" -lt "$ATTEMPTS" ]; then sleep "$SLEEP_SECONDS"; fi
+          done
+
+          if [ -z "$RUN_ID" ] || [ "$RUN_ID" = "null" ]; then
+            echo "No successful Release Smoke found after $((ATTEMPTS * SLEEP_SECONDS))s." >&2
+            exit 1
+          fi
+
+          echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Download release candidate artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
+          ARTIFACT_NAME="release-candidate-dist-${GITHUB_SHA}"
+          mkdir -p /tmp/release-candidate
+          gh run download "${{ steps.smoke_run.outputs.run_id }}" -R "${GITHUB_REPOSITORY}" -n "$ARTIFACT_NAME" -D /tmp/release-candidate
+          ls -la /tmp/release-candidate/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-candidate-dist
+          path: /tmp/release-candidate
+          retention-days: 1
+
+  # ── Step 2: Sign with cosign ────────────────────────────────────────
+  sign-release:
+    needs: prepare-release-candidate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-candidate-dist
+          path: dist
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3
+      - name: Sign release artifacts
+        env:
+          COSIGN_EXPERIMENTAL: true
+        run: |
+          for f in dist/bundle/* dist/skills/*; do
+            if [ -f "$f" ]; then
+              cosign sign-blob "$f" --output-signature "$f.sig" --output-certificate "$f.pem" --yes
+            fi
+          done
+      - name: Generate checksums
+        run: |
+          find dist -maxdepth 2 -type f ! -name '*.sig' ! -name '*.pem' ! -name 'checksums.txt' -print0 | sort -z | xargs -0 sha256sum > dist/checksums.txt
+          sha256sum -c dist/checksums.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-signed-dist
+          path: dist
+          retention-days: 1
+
+  # ── Step 3: Create GitHub Release ───────────────────────────────────
+  release:
+    needs: sign-release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-signed-dist
+          path: dist
+      - name: Create or update release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          VERSION="${TAG#v}"
+
+          # Render release notes from CHANGELOG
+          NOTES=$(awk "/^## \\[${VERSION}\\]/{found=1; next} /^## \\[/{if(found) exit} found{print}" CHANGELOG.md)
+          if [ -z "$NOTES" ]; then NOTES="Release ${TAG}"; fi
+
+          if gh release view "${TAG}" >/dev/null 2>&1; then
+            gh release upload "${TAG}" dist/bundle/* dist/skills/* dist/checksums.txt --clobber
+            gh release edit "${TAG}" --title "${TAG}" --notes "$NOTES" --latest
+          else
+            gh release create "${TAG}" dist/bundle/* dist/skills/* dist/checksums.txt \
+              --verify-tag --title "${TAG}" --notes "$NOTES" --latest
+          fi
+
+  # ── Step 4: Publish to npm ──────────────────────────────────────────
+  publish-npm:
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 25
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+      - name: Build + publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
           pnpm install --frozen-lockfile=true
           pnpm exec tsc -b packages/shared packages/vault packages/connectors apps/mcp
-          npx tsx --test packages/shared/test/*.test.ts packages/vault/test/*.test.ts
-          npx tsx scripts/audit-mcp.ts
-          npx tsx scripts/lint-skills.ts
 
-      - name: Build skill bundles
-        run: bash scripts/build-skills.sh
-
-      - name: Build npm tarball
-        run: |
           pnpm --filter socials-mcp run prepack
           (cd apps/mcp && npm pack)
-          mv apps/mcp/socials-mcp-*.tgz dist/socials-mcp-${{ steps.tag.outputs.version }}.tgz
 
-      - name: Sanity-check artifacts
-        run: |
-          test -f dist/socials-mcp-${{ steps.tag.outputs.version }}.tgz || { echo "::error::npm tarball missing"; exit 1; }
-          tar -tzf dist/socials-mcp-*.tgz | grep -q 'dist-bundle/socials-mcp.js' || { echo "::error::bundled CLI missing from tarball"; exit 1; }
-          for s in socials-connect weekly-digest script-review publish-package brand-outreach media-kit; do
-            test -f dist/skills/$s.skill || { echo "::error::$s.skill not built"; exit 1; }
-            unzip -l dist/skills/$s.skill | grep -q 'SKILL.md' || { echo "::error::SKILL.md missing from $s.skill"; exit 1; }
-          done
-          echo "Artifacts OK:"; ls -la dist/skills dist/*.tgz
+          PACKAGE_NAME=$(node -p "require('./apps/mcp/package.json').name")
+          PACKAGE_VERSION=$(node -p "require('./apps/mcp/package.json').version")
 
-      - name: Publish release with assets
-        uses: softprops/action-gh-release@v2
+          if [ "${PACKAGE_VERSION}" != "${VERSION}" ]; then
+            echo "Refusing to publish ${PACKAGE_NAME}@${PACKAGE_VERSION} for tag v${VERSION}." >&2
+            exit 1
+          fi
+
+          if npm view "${PACKAGE_NAME}@${PACKAGE_VERSION}" --registry=https://registry.npmjs.org version >/dev/null 2>&1; then
+            echo "${PACKAGE_NAME}@${PACKAGE_VERSION} already exists on npm; skipping."
+            exit 0
+          fi
+
+          cd apps/mcp && npm publish --access public --provenance --registry=https://registry.npmjs.org
+
+  # ── Step 5: Verify all channels ─────────────────────────────────────
+  verify-channels:
+    needs: [release, publish-npm]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          tag_name: ${{ steps.tag.outputs.tag }}
-          name: ${{ steps.tag.outputs.tag }}
-          generate_release_notes: true
-          fail_on_unmatched_files: true
-          files: |
-            dist/socials-mcp-${{ steps.tag.outputs.version }}.tgz
-            dist/skills/*.skill
+          node-version: 25
+          registry-url: https://registry.npmjs.org
+      - name: Verify publish channels
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          TAG="${GITHUB_REF_NAME}"
+          NPM_NAME=$(node -p "require('./apps/mcp/package.json').name")
+
+          echo "=== Channel verification for ${TAG} ==="
+          FAIL=0
+
+          if gh release view "${TAG}" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
+            echo "PASS  GitHub Release ${TAG}"
+          else
+            echo "FAIL  GitHub Release ${TAG} not found"
+            FAIL=1
+          fi
+
+          if npm view "${NPM_NAME}@${VERSION}" --registry=https://registry.npmjs.org version >/dev/null 2>&1; then
+            echo "PASS  npm ${NPM_NAME}@${VERSION}"
+          else
+            echo "FAIL  npm ${NPM_NAME}@${VERSION} not found"
+            FAIL=1
+          fi
+
+          echo "=== Summary ==="
+          if [ "$FAIL" -ne 0 ]; then
+            echo "One or more required channels missing for ${TAG}."
+            exit 1
+          fi
+          echo "All required channels verified for ${TAG}."

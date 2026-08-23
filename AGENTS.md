@@ -42,10 +42,37 @@ Tests, audit, lint, CodeQL also run in CI (`.github/workflows/ci.yml`, `codeql.y
 
 ## Release process (astro-style, tag-driven)
 
+```text
+commit A          commit B (tag v0.5.0)               CI pipeline
+───────────────────┬─────────────────────────────────────────────
+bump version       │─→ git tag vX.Y.Z && git push origin vX.Y.Z
+chore(release):    │                                       
+bump version to    │                                       
+X.Y.Z             │                                       
+                   ├──────────────────────────────→ release-smoke.yml (auto)
+                   │   runs on chore(release): bump version commits
+                   │   build → tests → audit → lint → doctor → smoke
+                   │   builds 6 .skill bundles + npm tarball
+                   │   uploads release-candidate-dist artifact
+                   │                                       
+                   ├──────────────────────────────→ release.yml (auto)
+                   │   triggered by tag push v*
+                   │   waits for release-smoke to succeed for this SHA
+                   │   downloads smoke artifact (no rebuild)
+                   │   cosign sign + checksums
+                   │   creates GitHub Release with all assets
+                   │   npm publish --provenance
+                   │   verifies all channels
+```
+
 1. Bump version together: root `package.json` · `apps/mcp/package.json` · `server.json` · `.claude-plugin/plugin.json` (+ `CHANGELOG.md`)
-2. `git tag vX.Y.Z && git push origin vX.Y.Z`
-3. `.github/workflows/release.yml`: verifies tag == all 4 versions → runs tests + audits → builds 6 `.skill` bundles + npm tarball (bundled CLI) → sanity-checks contents → attaches to the GitHub Release
-4. `.github/workflows/docker.yml`: publishes `ghcr.io/aryaminus/socials-assistant:<tag>` (+ latest) — GITHUB_TOKEN only, no extra secrets
+2. Commit: `git commit -m "chore(release): bump version to X.Y.Z"` — the exact prefix triggers the Release Smoke workflow
+3. Tag + push: `git tag vX.Y.Z && git push origin main --follow-tags`
+4. `.github/workflows/release-smoke.yml`: builds + tests + uploads artifact (skipped on non-version-bump commits)
+5. `.github/workflows/release.yml`: waits for smoke, downloads artifact, cosign signs, creates GitHub Release, npm publish with provenance, verifies channels
+6. `.github/workflows/docker.yml`: publishes `ghcr.io/aryaminus/socials-assistant:<tag>` (+ latest)
+
+CI (`ci.yml`) skips `chore(release):` commits to avoid duplicate runs.
 
 Stable asset URLs after any release: `releases/latest/download/socials-mcp-X.Y.Z.tgz` pattern + per-skill `.skill` for claude.ai upload.
 
