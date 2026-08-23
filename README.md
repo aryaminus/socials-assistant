@@ -29,7 +29,7 @@ After npm publish: `npx socials-mcp` replaces the clone for end users. All insta
 | Local stdio (any agent) | `node apps/mcp/bin/socials-mcp.js` |
 | Local/LAN HTTP | `--http` + `SOCIALS_MCP_TOKEN` |
 | Docker / VPS | `docker compose up --build` |
-| Cloud (multi-tenant, OAuth 2.1) | `infra/worker` + `docs/hosting-cloudflare.md` |
+| Cloud (multi-tenant, OAuth 2.1) | `infra/worker` — **Cloudflare judged best free host** (no cold starts, D1, first-class MCP OAuth); Render/Docker blueprints also committed. Hosting-model decision guide: top of `infra/worker/README.md` |
 | Claude Code plugin | `/plugin marketplace add aryaminus/socials-assistant` |
 | Skills (all agents) | `skills/` (+ `.claude/skills/`, `.agents/skills/` symlinks) |
 

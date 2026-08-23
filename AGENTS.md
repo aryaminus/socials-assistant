@@ -36,7 +36,18 @@ node apps/mcp/bin/socials-mcp.js snapshot  # headless snapshot (cron-safe)
 npx tsx scripts/weekly-digest.ts           # digest → digests/YYYY-WW.md (+ optional email)
 ```
 
-Tests, audit, and lint also run in CI (`.github/workflows/ci.yml`).
+Tests, audit, lint, CodeQL also run in CI (`.github/workflows/ci.yml`, `codeql.yml`).
+
+## Release process (astro-style, tag-driven)
+
+1. Bump version together: root `package.json` · `apps/mcp/package.json` · `server.json` · `.claude-plugin/plugin.json` (+ `CHANGELOG.md`)
+2. `git tag vX.Y.Z && git push origin vX.Y.Z`
+3. `.github/workflows/release.yml`: verifies tag == all 4 versions → runs tests + audits → builds 6 `.skill` bundles + npm tarball (bundled CLI) → sanity-checks contents → attaches to the GitHub Release
+4. `.github/workflows/docker.yml`: publishes `ghcr.io/aryaminus/socials-assistant:<tag>` (+ latest) — GITHUB_TOKEN only, no extra secrets
+
+Stable asset URLs after any release: `releases/latest/download/socials-mcp-X.Y.Z.tgz` pattern + per-skill `.skill` for claude.ai upload.
+
+Note: `apps/mcp/dist-bundle/` is gitignored (built by prepack/publish); never commit vaults (`*.db*`), `.socials-data/`, or `controlkeel/` governance DBs.
 
 ## Environment variables
 

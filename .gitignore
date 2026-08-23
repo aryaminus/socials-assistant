@@ -1,11 +1,30 @@
+# dependencies
 node_modules/
+
+# build output (tsc dist, esbuild bundles, skill artifacts)
 dist/
+dist-bundle/
 *.tsbuildinfo
+
+# secrets & env
 .env
 .env.*
 !.env.example
-digests/
-.DS_Store
+
+# runtime data — never commit vaults, tokens, or local governance DBs
+.socials-data/
 .socials-test/
-wrangler/.wrangler/
+digests/
+*.db
+*.db-shm
+*.db-wal
+controlkeel/
+
+# packaging artifacts
+*.tgz
+*.skill
+
+# tooling caches
+.wrangler/
 coverage/
+.DS_Store

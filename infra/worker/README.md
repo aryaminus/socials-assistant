@@ -1,5 +1,27 @@
 # Deploy socials-mcp to Cloudflare Workers (free tier, multi-tenant)
 
+## First: which hosting model is right?
+
+This project is **not** a stateless API like a calculator service — every install holds OAuth tokens to someone's social accounts plus their private analytics history. That shapes everything:
+
+| Model | Who it's for | Cost | Notes |
+|---|---|---|---|
+| **Local only** (`npx` / clone) — the default | Individual creators | $0 forever | Tokens never leave the machine. Most private, zero ops. All 20 tools work via stdio/localhost. |
+| **Self-hosted remote MCP** (this guide) | One creator wanting a single URL for all their agents, or a small trusted group — each user gets an isolated, encrypted vault | $0 on Cloudflare free tier | You are the operator; your Google login gates access. |
+| **Operator-hosted for the public** | Offering "a link anyone can use" | $0 until heavy traffic | Possible (the Worker is fully multi-tenant), but every user must trust the operator with their platform tokens (encrypted at rest — the operator holds the key). For strangers, self-hosting is the honest recommendation, and this repo makes it a 10-minute job. |
+
+There is deliberately **no shared "our server, everyone's data" instance** advertised in the README: an analytics vault must belong to its creator. Stateless services can host one public endpoint; a token-and-history vault cannot without becoming a data custodian.
+
+## Provider verdict (why Cloudflare)
+
+| Provider | Free tier | Cold starts | MCP fit | Verdict |
+|---|---|---|---|---|
+| **Cloudflare Workers + D1** | 100k req/day, D1 free | **None** | First-class: `@cloudflare/agents` OAuthProvider (OAuth 2.1 + DCR), recommended stateless pattern | ✅ **Best free option — Worker already built here** |
+| Render (`render.yaml` committed) | Free web service; sleeps after ~15 min idle | ~30s+ on wake | Node HTTP MCP works; cold starts stall agent handshakes | OK fallback if already on Render |
+| Railway | ❌ No free tier ($5 trial, then usage) | — | Fine technically | Not free |
+| Fly.io | ❌ No free tier (~$3/mo min) | Small | Fine technically | Not free |
+| Docker on any VPS (`docker-compose.yml`, GHCR image on releases) | Software free; infra ~$4/mo or your own box | None | Full control | For plain-server self-hosters |
+
 One URL → every agent connects (Claude Code, Claude Desktop/Cowork connectors, ChatGPT plugins, Codex, Gemini CLI, Antigravity, opencode) via OAuth 2.1 + Dynamic Client Registration. Each creator logs in with Google; their vault rows and platform tokens are isolated and encrypted.
 
 **Prereq note:** the worker targets `@cloudflare/agents` and `wrangler` v4; run `pnpm install` in `infra/worker` and `pnpm run typecheck` before deploying — the agents SDK evolves quickly, minor API adjustments may be needed at deploy time.

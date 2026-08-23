@@ -1,0 +1,98 @@
+name: Release
+
+# Astro-style tag-driven release, adapted for socials-assistant:
+#   1. Bump the version in root package.json + apps/mcp/package.json + server.json + .claude-plugin/plugin.json (+ CHANGELOG.md)
+#   2. git tag vX.Y.Z && git push origin vX.Y.Z
+# This workflow verifies version consistency, builds the .skill bundles
+# (claude.ai upload) and the npm tarball (offline install), sanity-checks
+# them, and attaches everything to the GitHub Release — so
+# releases/latest/download/<name>.skill always matches the tagged code.
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to (re)build the release for, e.g. v0.3.0"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build & publish release assets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 25
+
+      - name: Resolve tag
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ github.event.inputs.tag }}"
+          else
+            TAG="${GITHUB_REF_NAME}"
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+          echo "Releasing $TAG (version ${TAG#v})"
+
+      - name: Verify version consistency (tag == 4 version files)
+        run: |
+          VER="${{ steps.tag.outputs.version }}"
+          PKG=$(node -p "require('./package.json').version")
+          MCP=$(node -p "require('./apps/mcp/package.json').version")
+          SRV=$(node -p "require('./server.json').version")
+          PLG=$(node -p "require('./.claude-plugin/plugin.json').version")
+          echo "tag=$VER pkg=$PKG mcp=$MCP server=$SRV plugin=$PLG"
+          [ "$VER" = "$PKG" ] || { echo "::error::tag v$VER != package.json $PKG"; exit 1; }
+          [ "$VER" = "$MCP" ] || { echo "::error::tag v$VER != apps/mcp/package.json $MCP"; exit 1; }
+          [ "$VER" = "$SRV" ] || { echo "::error::tag v$VER != server.json $SRV"; exit 1; }
+          [ "$VER" = "$PLG" ] || { echo "::error::tag v$VER != .claude-plugin/plugin.json $PLG"; exit 1; }
+
+      - name: Run test suite + audits before releasing
+        run: |
+          pnpm install --frozen-lockfile=false
+          pnpm exec tsc -b packages/shared packages/vault packages/connectors apps/mcp
+          npx tsx --test packages/shared/test/*.test.ts packages/vault/test/*.test.ts
+          npx tsx scripts/audit-mcp.ts
+          npx tsx scripts/lint-skills.ts
+
+      - name: Build skill bundles
+        run: bash scripts/build-skills.sh
+
+      - name: Build npm tarball
+        run: |
+          pnpm --filter socials-mcp run prepack
+          (cd apps/mcp && npm pack)
+          mv apps/mcp/socials-mcp-*.tgz dist/socials-mcp-${{ steps.tag.outputs.version }}.tgz
+
+      - name: Sanity-check artifacts
+        run: |
+          test -f dist/socials-mcp-${{ steps.tag.outputs.version }}.tgz || { echo "::error::npm tarball missing"; exit 1; }
+          tar -tzf dist/socials-mcp-*.tgz | grep -q 'dist-bundle/socials-mcp.js' || { echo "::error::bundled CLI missing from tarball"; exit 1; }
+          for s in socials-connect weekly-digest script-review publish-package brand-outreach media-kit; do
+            test -f dist/skills/$s.skill || { echo "::error::$s.skill not built"; exit 1; }
+            unzip -l dist/skills/$s.skill | grep -q 'SKILL.md' || { echo "::error::SKILL.md missing from $s.skill"; exit 1; }
+          done
+          echo "Artifacts OK:"; ls -la dist/skills dist/*.tgz
+
+      - name: Publish release with assets
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: ${{ steps.tag.outputs.tag }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: |
+            dist/socials-mcp-${{ steps.tag.outputs.version }}.tgz
+            dist/skills/*.skill
