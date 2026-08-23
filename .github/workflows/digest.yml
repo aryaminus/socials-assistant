@@ -59,7 +59,7 @@ jobs:
           path: .socials-data
           key: socials-vault-${{ github.run_id }}
 
-      - uses: stefanzweifel/git-auto-commit-action@v5
+      - uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "digest: weekly update"
           file_pattern: "digests/*.md"
