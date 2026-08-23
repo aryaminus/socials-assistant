@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here. Format: Keep a Changelog; versioning: SemVer.
 
+## [0.4.7] — 2026-08-23
+
+### Fixed
+- npm package now includes README.md + LICENSE on npmjs.com
+- Docker build: `CI=true` env var prevents pnpm TTY prompt in container
+
 ## [0.4.6] — 2026-08-23
 
 ### Added
