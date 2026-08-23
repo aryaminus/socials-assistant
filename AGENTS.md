@@ -19,7 +19,7 @@ One vault, every agent: Claude, ChatGPT, Gemini, Codex, Cursor, DeepSeek, Qwen, 
 | Gemini CLI | `gemini-extension.json` committed; or MCP block in `~/.gemini/settings.json` |
 | ChatGPT | Deploy the Worker → add as plugin/custom connector (Business/Enterprise) or via Responses API `tools: [{type: "mcp"}]` |
 | Cloud (multi-tenant) | `cd infra/worker && npx wrangler deploy` (guide: [docs/hosting-cloudflare.md](docs/hosting-cloudflare.md)) |
-| npm (any agent with Node.js) | `npx socials-mcp onboard` — walks through credential setup |
+| npm (any agent with Node.js) | `npx @aryaminus/socials-mcp onboard` — walks through credential setup |
 
 Zero-install cloud journey (deploy button → /setup checklist → agent connector): **[docs/GET-STARTED-CLOUD.md](docs/GET-STARTED-CLOUD.md)**
 
@@ -107,7 +107,7 @@ Set in GitHub → Settings → Secrets and variables → Actions:
 
 **After first npm publish**, switch to Trusted Publishing (OIDC) — no token needed:
 
-1. Go to npmjs.com → `socials-mcp` → Settings → Publishing access → **Add trusted publisher**
+1. Go to npmjs.com → `@aryaminus/socials-mcp` → Settings → Publishing access → **Add trusted publisher**
 2. Provider: **GitHub Actions**
 3. Owner: `aryaminus`, Repository: `socials-assistant`, Workflow: `release.yml`
 4. Delete `NPM_TOKEN` from GitHub secrets — the workflow uses `id-token: write` for OIDC automatically
@@ -161,7 +161,7 @@ export RESEND_API_KEY="re_..."                   # Resend API key for email
 ```bash
 npm login                          # authenticate with npmjs.com
 pnpm install && pnpm build        # build all packages
-pnpm --filter socials-mcp run prepack  # bundle for npm
+pnpm --filter @aryaminus/socials-mcp run prepack  # bundle for npm
 cd apps/mcp && npm pack           # verify tarball contents
 cd apps/mcp && npm publish --access public --provenance  # publish
 ```
@@ -171,6 +171,6 @@ The CI release flow does this automatically on tag push: `release-smoke.yml` bui
 ## Repo conventions
 
 - pnpm monorepo; Node >= 22.5 (built-in `node:sqlite`); TypeScript strict; ESM only.
-- Workspace packages: `@socials/shared`, `@socials/vault`, `@socials/connectors`, app `socials-mcp`.
+- Workspace packages: `@socials/shared`, `@socials/vault`, `@socials/connectors`, app `@aryaminus/socials-mcp`.
 - Skills live in `skills/<name>/SKILL.md` (agentskills.io spec); `.claude/skills/` and `.agents/skills/` symlinks for native discovery.
 - Version bumps: update `apps/mcp/package.json`, root `package.json`, `server.json`, `.claude-plugin/plugin.json` together; log in `CHANGELOG.md`.

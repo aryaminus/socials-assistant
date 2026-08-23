@@ -32,7 +32,7 @@ SET YOURSELF UP now. Try each method in order — skip what doesn't apply to you
 5. For other agents: read https://github.com/aryaminus/socials-assistant/blob/main/AGENTS.md
 
 **Method C — npm (if you have Node.js 22+):**
-1. `npx socials-mcp onboard` — walks through credential setup
+1. `npx @aryaminus/socials-mcp onboard` — walks through credential setup
 2. Connect your agent to the local MCP server using the agent-specific config from Method A or the AGENTS.md
 
 **Method D — If you can only browse the web:**
@@ -86,4 +86,4 @@ The prompt works because it tells the agent exactly what Socials Assistant is, w
 | Agent configs | https://github.com/aryaminus/socials-assistant/blob/main/agents/README.md |
 | Full docs | https://github.com/aryaminus/socials-assistant/tree/main/docs |
 | Skills (for claude.ai) | https://github.com/aryaminus/socials-assistant/releases/latest |
-| npm package | `npx socials-mcp` or `npm i -g socials-mcp` |
+| npm package | `npx @aryaminus/socials-mcp` or `npm i -g @aryaminus/socials-mcp` |

@@ -221,7 +221,7 @@ jobs:
           pnpm install --frozen-lockfile=true
           pnpm exec tsc -b packages/shared packages/vault packages/connectors apps/mcp
 
-          pnpm --filter socials-mcp run prepack
+          pnpm --filter @aryaminus/socials-mcp run prepack
           (cd apps/mcp && npm pack)
 
           PACKAGE_NAME=$(node -p "require('./apps/mcp/package.json').name")

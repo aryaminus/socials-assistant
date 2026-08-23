@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented here. Format: Keep a Changelog; versioning: SemVer.
 
+## [0.4.4] — 2026-08-23
+
+### Changed
+- Renamed npm package from `socials-mcp` to `@aryaminus/socials-mcp` (scoped under `@aryaminus` org)
+- CLI binary unchanged: `socials-mcp` command works the same
+
+### Fixed
+- npm publish: use `npm config set` for auth token instead of `setup-node` registry-url conflict
+- CI workflows: updated pnpm filter to match scoped package name
+
 ## [0.4.3] — 2026-08-23
 
 ### Fixed
