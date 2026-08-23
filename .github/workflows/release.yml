@@ -322,6 +322,9 @@ jobs:
             fi
           done
 
+          # GitHub Packages requires auth even for reads
+          npm config set //npm.pkg.github.com/:_authToken "${GH_TOKEN}"
+
           # GitHub Packages propagation can also lag
           for i in $(seq 1 $MAX_ATTEMPTS); do
             if npm view "${NPM_NAME}@${VERSION}" --registry=https://npm.pkg.github.com version >/dev/null 2>&1; then
