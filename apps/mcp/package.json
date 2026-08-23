@@ -7,12 +7,12 @@
   "bin": {
     "socials-mcp": "dist-bundle/socials-mcp.js"
   },
-  "main": "dist/index.js",
+  "main": "dist-bundle/index.js",
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
+      "default": "./dist-bundle/index.js"
     }
   },
   "scripts": {
@@ -21,8 +21,8 @@
     "prepack": "tsc -b && tsx ../../scripts/bundle.ts"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.12.0",
-    "zod": "^3.24.0"
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "zod": "^3.25.0"
   },
   "repository": {
     "type": "git",
@@ -44,7 +44,6 @@
     "model-context-protocol"
   ],
   "files": [
-    "bin",
     "dist-bundle",
     "README.md",
     "LICENSE"

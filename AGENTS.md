@@ -89,6 +89,73 @@ Errors return as tool results (`isError: true`) with a `fix:` hint — agents sh
 - Outreach is draft-first: no tool sends email; `SOCIALS_ALLOW_SEND` gates any send automation the user wires separately (Resend MCP).
 - `vault_query` is read-only SELECT, blocked from writes/DDL.
 
+## Setup reference
+
+### GitHub Actions secrets (for CI/CD)
+
+Set in GitHub → Settings → Secrets and variables → Actions:
+
+| Secret | Required for | How to get |
+|--------|-------------|------------|
+| `NPM_TOKEN` | npm publish (`release.yml`) | npmjs.com → Access Tokens → Generate New Token (Classic) → Automation scope |
+| `GITHUB_TOKEN` | GHCR push, releases | Auto-provided by GitHub Actions — no setup needed |
+
+### Cloudflare Worker secrets (for cloud deployment)
+
+Set in Cloudflare dashboard → Workers → your worker → Settings → Variables:
+
+| Variable | Type | Source |
+|----------|------|--------|
+| `GOOGLE_LOGIN_CLIENT_ID` | Plain text | Google Cloud Console → OAuth client (for MCP sign-in) |
+| `GOOGLE_LOGIN_CLIENT_SECRET` | Encrypted | Same OAuth client |
+| `TOKEN_ENCRYPTION_KEY` | Encrypted | `openssl rand -hex 32` |
+| `SOCIALS_GOOGLE_CLIENT_ID` | Encrypted | Same as GOOGLE_LOGIN or separate YouTube data app |
+| `SOCIALS_GOOGLE_CLIENT_SECRET` | Encrypted | Same as GOOGLE_LOGIN or separate YouTube data app |
+| `SOCIALS_META_APP_ID` | Encrypted | Meta developer app (docs/onboarding-meta.md) |
+| `SOCIALS_META_APP_SECRET` | Encrypted | Same Meta app |
+| `SOCIALS_TIKTOK_CLIENT_KEY` | Encrypted | TikTok developer app (docs/onboarding-tiktok.md) |
+| `SOCIALS_TIKTOK_CLIENT_SECRET` | Encrypted | Same TikTok app |
+
+Plus D1 database + KV namespace (provisioned by deploy button or manually).
+
+### Local development
+
+Platform credentials: set env vars OR run `socials-mcp onboard` / `socials-mcp config set <key> <value>` (persists to `~/.socials-assistant/config.json`). Env vars win over the file.
+
+```bash
+# required (for any platform you use)
+export SOCIALS_GOOGLE_CLIENT_ID="..."
+export SOCIALS_GOOGLE_CLIENT_SECRET="..."
+export SOCIALS_META_APP_ID="..."
+export SOCIALS_META_APP_SECRET="..."
+export SOCIALS_TIKTOK_CLIENT_KEY="..."
+export SOCIALS_TIKTOK_CLIENT_SECRET="..."
+
+# optional
+export SOCIALS_DATA_DIR="~/.socials-assistant"  # default
+export SOCIALS_MCP_TOKEN="..."                   # protect HTTP mode
+export SOCIALS_MCP_PORT=3344                     # default
+export SOCIALS_OAUTH_PORT=8399                   # default
+export SOCIALS_CSV_DIR="~/Downloads"             # TikTok CSV search path
+export SOCIALS_ALLOWED_ORIGINS="https://..."     # HTTP mode origin allowlist
+export SOCIALS_ALLOW_SEND="1"                    # enable send automation (with daily cap)
+export DIGEST_TO="you@example.com"               # weekly digest email
+export DIGEST_FROM="sender@example.com"
+export RESEND_API_KEY="re_..."                   # Resend API key for email
+```
+
+### npm publish (local)
+
+```bash
+npm login                          # authenticate with npmjs.com
+pnpm install && pnpm build        # build all packages
+pnpm --filter socials-mcp run prepack  # bundle for npm
+cd apps/mcp && npm pack           # verify tarball contents
+cd apps/mcp && npm publish --access public --provenance  # publish
+```
+
+The CI release flow does this automatically on tag push: `release-smoke.yml` builds + tests → `release.yml` waits for smoke → cosign signs → GitHub Release → npm publish with provenance → verifies channels.
+
 ## Repo conventions
 
 - pnpm monorepo; Node ≥ 22.5 (built-in `node:sqlite`); TypeScript strict; ESM only.
