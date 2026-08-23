@@ -51,16 +51,20 @@ function mergedConfig() {
 
 /** Kick off a promise in the background; report its settled result via connection_status. */
 const bgResults = new Map<string, Promise<string>>();
+const BG_TTL_MS = 5 * 60_000; // auto-clean results after 5 minutes
 
 function raceWithPending<T>(key: string, flow: Promise<T>, pendingMsg: (m: string) => string, ms = 15_000): Promise<{ content: Array<{ type: "text"; text: string }> }> {
   const settled = flow
     .then((v) => ({ ok: true as const, v }))
     .catch((e: Error) => ({ ok: false as const, e }));
-  bgResults.set(
-    key,
-    settled.then((r) => (r.ok ? pendingMsg("done") : `❌ ${key} connect failed: ${r.e.message}`))
+  const resultPromise = settled.then((r) =>
+    r.ok ? pendingMsg("done") : `❌ ${key} connect failed: ${r.e.message}`
   );
-  void settled.then((r) => bgResults.set(key, Promise.resolve(r.ok ? pendingMsg("done") : `❌ ${key} connect failed: ${r.e.message}`)));
+  bgResults.set(key, resultPromise);
+  // Auto-clean after TTL to prevent memory accumulation
+  void resultPromise.then(() => {
+    setTimeout(() => bgResults.delete(key), BG_TTL_MS);
+  });
   return Promise.race([
     settled.then((r) => ({
       content: [{ type: "text" as const, text: r.ok ? pendingMsg("done") : `❌ ${key} connect failed: ${r.e.message}` }],

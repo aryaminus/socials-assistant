@@ -202,19 +202,19 @@ export async function completePlatformOAuth(
 
 /** Friendly no-CLI setup checklist served at GET /setup. Never echoes secret values. */
 export function setupPage(origin: string, env: Record<string, string | undefined>): Response {
-  const rows: Array<[string, string]> = [
-    ["GOOGLE_LOGIN_CLIENT_ID", "MCP sign-in (Google OAuth client)"],
-    ["GOOGLE_LOGIN_CLIENT_SECRET", "MCP sign-in secret"],
-    ["TOKEN_ENCRYPTION_KEY", "Vault token encryption (openssl rand -hex 32)"],
-    ["SOCIALS_GOOGLE_CLIENT_ID / SECRET", "YouTube data app (same client as sign-in works)"],
-    ["SOCIALS_META_APP_ID / SECRET", "Instagram + Facebook app"],
-    ["SOCIALS_TIKTOK_CLIENT_KEY / SECRET", "TikTok app"],
+  const rows: Array<[string[], string]> = [
+    [["GOOGLE_LOGIN_CLIENT_ID"], "MCP sign-in (Google OAuth client)"],
+    [["GOOGLE_LOGIN_CLIENT_SECRET"], "MCP sign-in secret"],
+    [["TOKEN_ENCRYPTION_KEY"], "Vault token encryption (openssl rand -hex 32)"],
+    [["SOCIALS_GOOGLE_CLIENT_ID", "SOCIALS_GOOGLE_CLIENT_SECRET"], "YouTube data app (same client as sign-in works)"],
+    [["SOCIALS_META_APP_ID", "SOCIALS_META_APP_SECRET"], "Instagram + Facebook app"],
+    [["SOCIALS_TIKTOK_CLIENT_KEY", "SOCIALS_TIKTOK_CLIENT_SECRET"], "TikTok app"],
   ];
   const list = rows
-    .map(([k, d]) => {
-      const first = k.split(" ")[0].split("/")[0];
-      const set = !!env[first];
-      return `<tr><td><code>${k}</code></td><td>${d}</td><td>${set ? "✅ set" : "⬜ <b>Settings → Variables → Add</b> (encrypt secrets)"}</td></tr>`;
+    .map(([keys, d]) => {
+      const allSet = keys.every((k) => !!env[k]);
+      const label = keys.join(" / ");
+      return `<tr><td><code>${label}</code></td><td>${d}</td><td>${allSet ? "✅ set" : "⬜ <b>Settings → Variables → Add</b> (encrypt secrets)"}</td></tr>`;
     })
     .join("\n");
   const html = `<!doctype html><html><head><meta charset="utf-8"><title>socials-mcp — setup</title>

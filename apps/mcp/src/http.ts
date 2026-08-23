@@ -107,6 +107,15 @@ export async function runHttpServer(port: number): Promise<void> {
       (token ? " (bearer token required)" : "") +
       (allowedOrigins.length ? ` (extra origins: ${allowedOrigins.join(", ")})` : "")
   );
+
+  // Graceful shutdown for Docker / systemd
+  const shutdown = () => {
+    console.error("\n[socials-mcp] shutting down…");
+    httpServer.close(() => process.exit(0));
+    setTimeout(() => process.exit(1), 5_000); // force-kill after 5s
+  };
+  process.on("SIGTERM", shutdown);
+  process.on("SIGINT", shutdown);
 }
 
 function readBody(req: IncomingMessage): Promise<unknown> {

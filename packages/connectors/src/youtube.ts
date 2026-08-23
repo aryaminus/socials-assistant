@@ -258,6 +258,9 @@ export async function snapshotYoutube(
       );
       const curve: RetentionPoint[] = (ret.rows ?? []).map((r) => {
         const [ratio, watchRatio] = r as [number, number];
+        // NOTE: `seconds` is actually a 0..1 ratio of video duration (elapsedVideoTimeRatio),
+        // NOT actual seconds. Consumers should multiply by video duration for real timestamps.
+        // Kept as `seconds` for backwards compatibility with RetentionPoint type.
         return { seconds: ratio, ratio: watchRatio };
       });
       if (curve.length && snap.videos[0]) snap.videos[0].metrics.retention = curve;

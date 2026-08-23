@@ -55,7 +55,6 @@ export function initVault(db: D1Database, userKey: string, tokenKey?: string): D
       return rows;
     },
     async upsertAccount(platform, platformAccountId, handle, credentials) {
-      await db.batch(scopedInit(db));
       const r = await db
         .prepare(
           `INSERT INTO accounts (user_key, platform, platform_account_id, handle, connected_at, updated_at)
@@ -90,7 +89,6 @@ export function initVault(db: D1Database, userKey: string, tokenKey?: string): D
         .run();
     },
     async listAccounts() {
-      await db.batch(scopedInit(db));
       return (
         await db
           .prepare(`SELECT id, platform, platform_account_id, handle FROM accounts WHERE user_key = ? ORDER BY platform`)
@@ -233,12 +231,6 @@ export function initVault(db: D1Database, userKey: string, tokenKey?: string): D
     },
   };
   return vault;
-}
-
-function scopedInit(db: D1Database): D1PreparedStatement[] {
-  void db;
-  // schema applied once via `wrangler d1 execute --file=schema.sql`; here we no-op
-  return [];
 }
 
 // ---------- AES-GCM token encryption (WebCrypto) ----------

@@ -60,6 +60,15 @@ jobs:
           [ "$VER" = "$SRV" ] || { echo "::error::tag v$VER != server.json $SRV"; exit 1; }
           [ "$VER" = "$PLG" ] || { echo "::error::tag v$VER != .claude-plugin/plugin.json $PLG"; exit 1; }
 
+      - name: Verify CHANGELOG has entry for this version
+        run: |
+          VER="${{ steps.tag.outputs.version }}"
+          if ! grep -q "## \\[${VER}\\]" CHANGELOG.md; then
+            echo "::error::CHANGELOG.md has no entry for version $VER"
+            exit 1
+          fi
+          echo "CHANGELOG entry found for $VER"
+
       - name: Run test suite + audits before releasing
         run: |
           pnpm install --frozen-lockfile=true

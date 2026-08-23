@@ -1,36 +1,11 @@
-import { readFileSync } from "node:fs";
-import { homedir } from "node:os";
-import { join } from "node:path";
-import { openVault } from "./server.js";
+import { openVault, readConfigFile } from "./server.js";
 import type { Vault } from "@socials/vault";
 import { loadAppConfig, snapshotYoutube, snapshotMeta, snapshotTiktok, type GoogleTokens, type MetaIdentity, type TiktokTokens } from "@socials/connectors";
 import type { NormalizedSnapshot } from "@socials/shared";
 
-function configPath(): string {
-  return process.env.SOCIALS_DATA_DIR
-    ? join(process.env.SOCIALS_DATA_DIR, "config.json")
-    : join(homedir(), ".socials-assistant", "config.json");
-}
-
-function readFileCfg(): Record<string, string | undefined> {
-  try {
-    const cfg = JSON.parse(readFileSync(configPath(), "utf8")) as Record<string, string>;
-    return {
-      googleClientId: cfg.googleClientId,
-      googleClientSecret: cfg.googleClientSecret,
-      metaAppId: cfg.metaAppId,
-      metaAppSecret: cfg.metaAppSecret,
-      tiktokClientKey: cfg.tiktokClientKey,
-      tiktokClientSecret: cfg.tiktokClientSecret,
-    };
-  } catch {
-    return {};
-  }
-}
-
 /** Headless snapshot used by `socials-mcp snapshot` CLI and cron automation. */
 export async function snapshotAll(vault: Vault, days = 28): Promise<Record<string, unknown>> {
-  const cfg = { ...readFileCfg(), ...loadAppConfig() };
+  const cfg = { ...readConfigFile(), ...loadAppConfig() };
   const results: Record<string, unknown> = {};
   for (const acct of vault.listAccounts()) {
     try {
