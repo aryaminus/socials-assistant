@@ -1,6 +1,6 @@
 {
   "name": "socials-assistant",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "private": true,
   "description": "Open-source creator analytics MCP + agent skills: pull your own TikTok/Instagram/Facebook/YouTube data into a history vault, digest it, and draft brand outreach \u2014 from any AI agent.",
   "license": "MIT",
