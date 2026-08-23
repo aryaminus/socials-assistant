@@ -1,0 +1,25 @@
+{
+  "name": "socials-mcp-cloud",
+  "main": "src/entry.ts",
+  "compatibility_date": "2026-07-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [
+    {
+      "binding": "VAULT",
+      "database_name": "socials-vault",
+      "database_id": "REPLACE_WITH_YOUR_D1_ID"
+    }
+  ],
+  "kv_namespaces": [
+    { "binding": "OAUTH_KV", "id": "REPLACE_WITH_YOUR_KV_ID" }
+  ],
+  "vars": {
+    "GOOGLE_LOGIN_CLIENT_ID": "REPLACE — Google OAuth client id for MCP login (any Google account)",
+    "ALLOWED_ORIGINS": "*"
+  },
+  "secret_env_vars": [
+    "GOOGLE_LOGIN_CLIENT_SECRET",
+    "TOKEN_ENCRYPTION_KEY"
+  ],
+  "observability": { "enabled": true }
+}

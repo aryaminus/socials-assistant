@@ -1,0 +1,26 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 25
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile=false
+      - name: Typecheck + build
+        run: pnpm exec tsc -b packages/shared packages/vault packages/connectors apps/mcp
+      - name: Tests
+        run: npx tsx --test packages/shared/test/*.test.ts packages/vault/test/*.test.ts
+      - name: MCP stdio smoke
+        run: |
+          printf '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"ci","version":"0"}}}\n{"jsonrpc":"2.0","method":"notifications/initialized"}\n{"jsonrpc":"2.0","id":2,"method":"tools/list"}\n' | SOCIALS_DATA_DIR=/tmp/socials-ci node apps/mcp/bin/socials-mcp.js | grep -q '"tools":'

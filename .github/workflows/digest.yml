@@ -1,0 +1,65 @@
+name: weekly-digest
+on:
+  schedule:
+    - cron: "0 9 * * 1" # Mondays 09:00 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 25
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile=false
+
+      - name: Build
+        run: pnpm exec tsc -b packages/shared packages/vault packages/connectors apps/mcp
+
+      - name: Restore vault
+        # Self-hosted option: store your vault in a private repo instead of artifacts.
+        # For API-token-only mode (no TikTok CSV history) this step can be skipped.
+        uses: actions/cache/restore@v4
+        with:
+          path: .socials-data
+          key: socials-vault-${{ github.run_id }}
+          restore-keys: socials-vault-
+
+      - name: Snapshot + digest
+        env:
+          SOCIALS_DATA_DIR: ${{ github.workspace }}/.socials-data
+          # platform app credentials for headless refresh (all optional — snapshot skips what's missing)
+          SOCIALS_GOOGLE_CLIENT_ID: ${{ secrets.SOCIALS_GOOGLE_CLIENT_ID }}
+          SOCIALS_GOOGLE_CLIENT_SECRET: ${{ secrets.SOCIALS_GOOGLE_CLIENT_SECRET }}
+          SOCIALS_META_APP_ID: ${{ secrets.SOCIALS_META_APP_ID }}
+          SOCIALS_META_APP_SECRET: ${{ secrets.SOCIALS_META_APP_SECRET }}
+          SOCIALS_TIKTOK_CLIENT_KEY: ${{ secrets.SOCIALS_TIKTOK_CLIENT_KEY }}
+          SOCIALS_TIKTOK_CLIENT_SECRET: ${{ secrets.SOCIALS_TIKTOK_CLIENT_SECRET }}
+          # optional self-email of the digest (never outreach)
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          DIGEST_TO: ${{ secrets.DIGEST_TO }}
+          DIGEST_FROM: ${{ secrets.DIGEST_FROM }}
+        run: npx tsx scripts/weekly-digest.ts
+
+      - name: Save vault
+        uses: actions/cache/save@v4
+        with:
+          path: .socials-data
+          key: socials-vault-${{ github.run_id }}
+
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "digest: weekly update"
+          file_pattern: "digests/*.md"

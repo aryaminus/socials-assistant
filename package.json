@@ -1,0 +1,26 @@
+{
+  "name": "socials-assistant",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Open-source creator analytics MCP + agent skills: pull your own TikTok/Instagram/Facebook/YouTube data into a history vault, digest it, and draft brand outreach — from any AI agent.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "scripts": {
+    "build": "tsc -b packages/shared packages/vault packages/connectors apps/mcp",
+    "typecheck": "tsc -b packages/shared packages/vault packages/connectors apps/mcp --dry",
+    "test": "tsx --test packages/shared/test/*.test.ts packages/vault/test/*.test.ts packages/connectors/test/*.test.ts",
+    "mcp": "node apps/mcp/bin/socials-mcp.js",
+    "mcp:http": "node apps/mcp/bin/socials-mcp.js --http",
+    "onboard": "node apps/mcp/bin/socials-mcp.js onboard",
+    "snapshot": "node apps/mcp/bin/socials-mcp.js snapshot",
+    "digest": "tsx scripts/weekly-digest.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0",
+    "tsx": "^4.23.12",
+    "typescript": "^7.0.2"
+  }
+}

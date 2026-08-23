@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "socials": {
+      "command": "node",
+      "args": ["${workspaceFolder}/apps/mcp/bin/socials-mcp.js"],
+      "env": {
+        "SOCIALS_DATA_DIR": "${workspaceFolder}/.socials-data"
+      }
+    }
+  }
+}
