@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented here. Format: Keep a Changelog; versioning: SemVer.
 
+## [0.4.5] — 2026-08-23
+
+### Fixed
+- Release smoke workflow: tarball glob pattern matches scoped package name `aryaminus-socials-mcp-*.tgz`
+
 ## [0.4.4] — 2026-08-23
 
 ### Changed

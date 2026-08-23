@@ -47,10 +47,10 @@ jobs:
       - name: Build skill bundles + npm tarball
         run: |
           bash scripts/build-skills.sh
-          pnpm --filter socials-mcp run prepack
+          pnpm --filter @aryaminus/socials-mcp run prepack
           (cd apps/mcp && npm pack)
           mkdir -p dist/skills dist/bundle
-          mv apps/mcp/socials-mcp-*.tgz dist/bundle/
+          mv apps/mcp/aryaminus-socials-mcp-*.tgz dist/bundle/
 
       - name: Verify artifacts
         run: |
@@ -58,7 +58,7 @@ jobs:
             test -f dist/skills/$s.skill || { echo "::error::$s.skill not built"; exit 1; }
             unzip -l dist/skills/$s.skill | grep -q 'SKILL.md' || { echo "::error::SKILL.md missing from $s.skill"; exit 1; }
           done
-          test -f dist/bundle/socials-mcp-*.tgz || { echo "::error::npm tarball missing"; exit 1; }
+          test -f dist/bundle/aryaminus-socials-mcp-*.tgz || { echo "::error::npm tarball missing"; exit 1; }
           echo "Smoke artifacts OK:"; ls -la dist/skills dist/bundle
 
       - uses: actions/upload-artifact@v4
