@@ -14,4 +14,4 @@
 - [ ] `pnpm exec tsx scripts/lint-skills.ts` passing (if skills changed)
 - [ ] Official APIs only — no scraping, no logged-in session automation
 - [ ] CHANGELOG.md updated (user-facing changes)
-- [ ] Version files bumped together (root + apps/mcp + server.json + .claude-plugin)
+- [ ] Version files bumped together (root + apps/mcp + apps/mcp/src/server.ts VERSION + server.json + .claude-plugin) with a CHANGELOG.md entry

@@ -5,7 +5,7 @@
 ```bash
 git clone https://github.com/aryaminus/socials-assistant && cd socials-assistant
 ./setup.sh              # install + build + doctor
-pnpm test               # 17 unit tests
+pnpm test               # unit tests
 pnpm exec tsx scripts/audit-mcp.ts && pnpm exec tsx scripts/lint-skills.ts
 ```
 

@@ -105,4 +105,4 @@ Endpoint: `http://127.0.0.1:3344/mcp` — add as a remote/HTTP MCP server in any
 
 ## Skills
 
-Copy `skills/*/` into your agent's skills directory (e.g. Claude Code: `~/.claude/skills/`, opencode: `.opencode/skills/`, or reference them from this repo). The four skills: `socials-connect`, `weekly-digest`, `brand-outreach`, `media-kit`.
+Copy `skills/*/` into your agent's skills directory (e.g. Claude Code: `~/.claude/skills/`, opencode: `.opencode/skills/`, or reference them from this repo), or run `npx skills add aryaminus/socials-assistant`. The six skills: `socials-connect`, `weekly-digest`, `script-review`, `publish-package`, `brand-outreach`, `media-kit`. Prebuilt `.skill` bundles for claude.ai are on the [latest release](https://github.com/aryaminus/socials-assistant/releases/latest).

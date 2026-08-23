@@ -30,10 +30,10 @@ Focused scope: **own-analytics vault → insight → outreach**. Every capabilit
 `idea → scripting → script_review → brand_review → approved → posted → measured`
 
 The **content pipeline** tools track every deliverable through these stages; the skills drive each transition:
-1. **script-review** scores the script before she records (evidence: her own top hooks + retention curves + SEO keywords from the profile).
+1. **script-review** scores the script before recording (evidence: the creator's own top hooks + retention curves + SEO keywords from the profile).
 2. **brand-outreach** drafts the review-request email; stage moves to `brand_review`.
-3. Green light → **publish-package** assembles title/caption/hashtags/best posting window from vault data; she posts (the human always presses publish); stage `posted`.
-4. 48h + 7d checks measure vs her median automatically; outcome lands in `measured` + feeds the next media kit as a case study.
+3. Green light → **publish-package** assembles title/caption/hashtags/best posting window from vault data; the creator posts (a human always presses publish); stage `posted`.
+4. 48h + 7d checks measure vs their median automatically; outcome lands in `measured` + feeds the next media kit as a case study.
 
 ## Derived analyses (skills can compute from existing vault data)
 
@@ -55,11 +55,11 @@ These need **no new tools** — they're queries + interpretation the skills run 
 - Auto-sending outreach (draft-first, human-approved, `SOCIALS_ALLOW_SEND` gate)
 - Fabricated estimates (every number carries a window and a source)
 
-## Extension points
-
 ## Deliberately not borrowed from scheduling tools (Postiz etc.)
 
 Postiz (open-source scheduler) solves posting automation with a dashboard — its concepts we took: best-time analytics (day-of-week from the vault), caption/hashtag generation (publish-package skill), approval workflow states (content_pipeline stages), and its compliance stance (official APIs only). Posting itself stays out of scope: if the creator ever wants scheduled posting, self-hosted Postiz is the right tool and socials-assistant's publish packages hand off cleanly to it.
+
+## Extension points
 
 - **New platform**: implement `connect<Platform>` + `snapshot<Platform>` in `packages/connectors` (see CONTRIBUTING.md) — the vault, tools, and skills pick it up automatically.
 - **New workflow**: a SKILL.md composing existing tools; prefer this over new tools.

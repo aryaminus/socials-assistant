@@ -34,7 +34,7 @@ git clone https://github.com/aryaminus/socials-assistant && cd socials-assistant
 
 ```bash
 pnpm install && pnpm build                 # build all packages
-pnpm test                                  # unit tests (17)
+pnpm test                                  # unit tests
 pnpm exec tsx scripts/audit-mcp.ts         # MCP contract audit (names, schemas, order, errors)
 pnpm exec tsx scripts/lint-skills.ts       # SKILL.md spec compliance
 node apps/mcp/bin/socials-mcp.js doctor    # environment + vault health check
@@ -46,16 +46,21 @@ Tests, audit, lint, CodeQL also run in CI (`.github/workflows/ci.yml`, `codeql.y
 
 ## Release process (astro-style, tag-driven)
 
-1. Bump version together: root `package.json` · `apps/mcp/package.json` · `server.json` · `.claude-plugin/plugin.json` (+ `CHANGELOG.md`)
-2. Commit: `git commit -m "chore(release): bump version to X.Y.Z"` — the exact prefix triggers the Release Smoke workflow
-3. Tag + push: `git tag vX.Y.Z && git push origin main --follow-tags`
-4. `.github/workflows/release-smoke.yml`: builds + tests + uploads artifact (skipped on non-version-bump commits)
-5. `.github/workflows/release.yml`: waits for smoke, downloads artifact, cosign signs, creates GitHub Release, npm publish with provenance, verifies channels
-6. `.github/workflows/docker.yml`: publishes `ghcr.io/aryaminus/socials-assistant:<tag>` (+ latest)
+1. Bump version together — all 5 files must match: root `package.json` · `apps/mcp/package.json` · `apps/mcp/src/server.ts` VERSION const · `server.json` · `.claude-plugin/plugin.json`
+2. Add a `CHANGELOG.md` entry for the new version — the release fails without one
+3. Commit: `git commit -m "chore(release): bump version to X.Y.Z"` — the exact prefix triggers the Release Smoke workflow
+4. Tag AFTER that commit and push both explicitly:
+   ```bash
+   git tag vX.Y.Z && git push origin main && git push origin vX.Y.Z
+   ```
+   (`--follow-tags` silently skips lightweight tags — always push the tag explicitly)
+5. `.github/workflows/release-smoke.yml`: builds + tests + uploads artifact (skipped on non-version-bump commits)
+6. `.github/workflows/release.yml`: waits for smoke, downloads artifact, cosign signs, creates GitHub Release, npm publish with provenance, GitHub Packages publish, verifies channels
+7. `.github/workflows/docker.yml`: publishes `ghcr.io/aryaminus/socials-assistant:<tag>` (+ latest)
 
 CI (`ci.yml`) skips `chore(release):` commits to avoid duplicate runs.
 
-Stable asset URLs after any release: `releases/latest/download/socials-mcp-X.Y.Z.tgz` pattern + per-skill `.skill` for upload.
+Stable asset URLs after any release: `releases/latest/download/aryaminus-socials-mcp-X.Y.Z.tgz` pattern + per-skill `.skill` for upload.
 
 Note: `apps/mcp/dist-bundle/` is gitignored (built by prepack/publish); never commit vaults (`*.db*`), `.socials-data/`, or `controlkeel/` governance DBs.
 
