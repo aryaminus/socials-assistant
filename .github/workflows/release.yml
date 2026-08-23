@@ -269,12 +269,22 @@ jobs:
             FAIL=1
           fi
 
-          if npm view "${NPM_NAME}@${VERSION}" --registry=https://registry.npmjs.org version >/dev/null 2>&1; then
-            echo "PASS  npm ${NPM_NAME}@${VERSION}"
-          else
-            echo "FAIL  npm ${NPM_NAME}@${VERSION} not found"
-            FAIL=1
-          fi
+          # npm CDN propagation can take 1-5 minutes; retry with backoff
+          MAX_ATTEMPTS=10
+          WAIT_SECS=30
+          for i in $(seq 1 $MAX_ATTEMPTS); do
+            if npm view "${NPM_NAME}@${VERSION}" --registry=https://registry.npmjs.org version >/dev/null 2>&1; then
+              echo "PASS  npm ${NPM_NAME}@${VERSION} (attempt ${i}/${MAX_ATTEMPTS})"
+              break
+            fi
+            if [ "$i" -eq "$MAX_ATTEMPTS" ]; then
+              echo "FAIL  npm ${NPM_NAME}@${VERSION} not found after ${MAX_ATTEMPTS} attempts"
+              FAIL=1
+            else
+              echo "  npm not yet visible (attempt ${i}/${MAX_ATTEMPTS}), waiting ${WAIT_SECS}s..."
+              sleep $WAIT_SECS
+            fi
+          done
 
           echo "=== Summary ==="
           if [ "$FAIL" -ne 0 ]; then
