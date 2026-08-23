@@ -3,6 +3,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { initVault, type D1Vault } from "./vault.ts";
 import { snapshotAll, refreshPlatformToken } from "./platforms.ts";
+import { startPlatformOAuth, completePlatformOAuth, platformConfigured, getDeployOrigin } from "./platform-oauth.ts";
 import { comparePeriods, topContent, digestRows, mediaKitRows } from "./analytics.ts";
 
 /**
@@ -18,6 +19,13 @@ export type Env = {
   GOOGLE_LOGIN_CLIENT_ID: string;
   GOOGLE_LOGIN_CLIENT_SECRET: string;
   TOKEN_ENCRYPTION_KEY: string;
+  // platform data apps (set via dashboard; see /setup)
+  SOCIALS_GOOGLE_CLIENT_ID?: string;
+  SOCIALS_GOOGLE_CLIENT_SECRET?: string;
+  SOCIALS_META_APP_ID?: string;
+  SOCIALS_META_APP_SECRET?: string;
+  SOCIALS_TIKTOK_CLIENT_KEY?: string;
+  SOCIALS_TIKTOK_CLIENT_SECRET?: string;
 };
 
 function userIdFromProps(props: { sessionId?: string; clientId?: string; userId?: string }): string {
@@ -105,6 +113,48 @@ export class SocialsMCP extends McpAgent<Env> {
     );
     this.server.tool("outreach_log_list", "List outreach attempts.", { status: z.string().optional() }, async ({ status }) =>
       text(await vault.outreachList(status))
+    );
+
+    // ------------------- in-chat platform connect (zero-local-install path) -------------------
+
+    this.server.tool(
+      "platform_oauth_url",
+      "Start connecting a platform for THIS vault user: returns a consent URL for the human to open and a handle. After approving on the platform, the human pastes the redirected URL back; pass it + the handle to platform_oauth_exchange. Requires the operator to have configured this platform's app credentials (/setup).",
+      { platform: z.enum(["youtube", "meta", "tiktok"]) },
+      async ({ platform }) => {
+        try {
+          if (!platformConfigured(this.env as unknown as Record<string, string>, platform)) {
+            return text({ error: "platform_not_configured", fix: `The operator must add ${platform} app credentials in the Cloudflare dashboard — checklist at <deployment-url>/setup.` });
+          }
+          const reqOrigin = getDeployOrigin();
+          if (!reqOrigin) {
+            return text({ error: "origin_unknown", fix: "Visit <your-worker-url>/setup once (warms the deployment), then retry." });
+          }
+          const started = await startPlatformOAuth(vault, this.env as unknown as Record<string, string>, platform, reqOrigin);
+          return text({
+            handle: started.handle,
+            instructions: "Open this URL, approve access, then copy the FULL redirected URL from the browser address bar and give it back with platform_oauth_exchange.",
+            url: started.url,
+          });
+        } catch (e) {
+          return text({ error: (e as Error).message });
+        }
+      }
+    );
+
+    this.server.tool(
+      "platform_oauth_exchange",
+      "Complete a platform connection: pass the handle from platform_oauth_url plus the full redirected URL the human copied after approving.",
+      { handle: z.string(), redirect_url: z.string().describe("The full URL the browser was redirected to after approval") },
+      async ({ handle, redirect_url }) => {
+        const reqOrigin = getDeployOrigin();
+        try {
+          const result = await completePlatformOAuth(vault, this.env as unknown as Record<string, string>, reqOrigin, handle, redirect_url);
+          return text(result);
+        } catch (e) {
+          return text({ error: (e as Error).message, fix: "Reissue platform_oauth_url and retry the paste (state expires after ~10 minutes)." });
+        }
+      }
     );
   }
 }

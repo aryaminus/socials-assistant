@@ -3,7 +3,7 @@
   "name": "io.github.aryaminus/socials-assistant",
   "display_name": "Socials Assistant",
   "description": "Creator analytics vault. Pull your own TikTok/Instagram/Facebook/YouTube analytics into a permanent local history vault, digest weekly performance, and draft brand outreach from verified numbers.",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "homepage": "https://github.com/aryaminus/socials-assistant",
   "repository": {
     "url": "https://github.com/aryaminus/socials-assistant",
@@ -101,6 +101,14 @@
     {
       "name": "pipeline_update",
       "description": "Move a pipeline item along (script_review \u2192 brand_review \u2192 approved \u2192 posted \u2192 measured)."
+    },
+    {
+      "name": "platform_oauth_url",
+      "description": "Start in-chat platform connection: returns consent URL + handle."
+    },
+    {
+      "name": "platform_oauth_exchange",
+      "description": "Complete an in-chat platform connection with the pasted redirect URL."
     }
   ],
   "installation": {

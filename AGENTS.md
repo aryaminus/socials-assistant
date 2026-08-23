@@ -17,6 +17,8 @@ One vault, every agent: Claude Code, Claude Desktop, Codex, Gemini CLI, opencode
 | Docker / any VPS | `docker compose up --build` → HTTP MCP at `:3344` |
 | Cloud (multi-tenant) | `cd infra/worker && npx wrangler deploy` (guide: `docs/hosting-cloudflare.md`) |
 
+Zero-install cloud journey (deploy button → /setup checklist → claude.ai connector): **docs/GET-STARTED-CLOUD.md**
+
 From source (single setup):
 
 ```bash

@@ -10,17 +10,21 @@ Pull your *own* TikTok, Instagram, Facebook, and YouTube metrics into a local hi
 - ✉️ **Draft-first outreach** — brand pitches are drafted from real vault metrics; sending is explicitly gated.
 - 💸 **≈$0/month** to run.
 
-## Quickstart (single setup)
+## Quickstart A — zero install (cloud, used from claude.ai)
+
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/aryaminus/socials-assistant)
+
+One click deploys your private instance (Worker + encrypted D1 vault). Then follow **docs/GET-STARTED-CLOUD.md**: finish the `/setup` checklist in the Cloudflare dashboard, paste your MCP URL into claude.ai as a custom connector, upload skill bundles from Releases, and connect your platforms *inside the chat* — no local installation ever.
+
+## Quickstart B — local (`npx` / single setup)
 
 ```bash
-git clone https://github.com/aryaminus/socials-assistant
-cd socials-assistant
+git clone https://github.com/aryaminus/socials-assistant && cd socials-assistant
 ./setup.sh                                 # install + build + test + doctor + next steps
 node apps/mcp/bin/socials-mcp.js onboard   # guided setup: platform apps + OAuth
-node apps/mcp/bin/socials-mcp.js snapshot  # pull analytics into the vault
 ```
 
-After npm publish: `npx socials-mcp` replaces the clone for end users. All install paths (plugin marketplace, skills CLI, Docker, Render, Cloudflare, per-agent configs): see **AGENTS.md** and **agents/README.md**.
+After npm publish: `npx socials-mcp` replaces the clone. All install paths (plugin marketplace, skills CLI, Docker/GHCR, Render, per-agent configs): see **AGENTS.md** and **agents/README.md**.
 
 ## Where things run
 

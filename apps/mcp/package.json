@@ -1,6 +1,6 @@
 {
   "name": "socials-mcp",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Creator analytics MCP server \u2014 TikTok/Instagram/Facebook/YouTube vault, weekly digests, and brand-outreach support. Local SQLite vault, official APIs only.",
   "license": "MIT",
   "type": "module",

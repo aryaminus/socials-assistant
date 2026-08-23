@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented here. Format: Keep a Changelog; versioning: SemVer.
 
+## [0.4.0] — 2026-08-23
+
+### Added
+- Zero-install cloud journey (docs/GET-STARTED-CLOUD.md): Deploy-to-Cloudflare button (root wrangler.jsonc auto-provisions Worker+D1+KV), self-service `/setup` checklist page served by the Worker (no CLI), in-chat platform connections (`platform_oauth_url` / `platform_oauth_exchange` — agent issues consent link, human pastes the redirect back; tokens exchanged server-side, stored encrypted)
+- Platform-OAuth landing page (/oauth/*/done) with paste-back instructions
+- README restructured: Quickstart A = zero install (claude.ai), Quickstart B = local
+
 ## [0.3.0] — 2026-08-23
 
 ### Added
