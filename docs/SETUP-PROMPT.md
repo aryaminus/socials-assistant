@@ -2,7 +2,7 @@
 
 Paste the prompt below into any AI agent — Claude, ChatGPT, Gemini, Codex, Cursor, Pi, opencode, or anything MCP-compatible. The agent becomes your setup guide: it does everything it can do directly (commands, config, verification), and for anything that needs your hands — clicking deploy, approving OAuth, entering credentials — it hands you the exact link, tells you what to click, and waits.
 
-One question up front (cloud or local), then a single linear path. No method-hopping.
+Cloud is the default path; npx and local source are fallbacks. No method-hopping.
 
 ---
 
@@ -55,21 +55,37 @@ git clone https://github.com/aryaminus/socials-assistant && cd socials-assistant
 then node apps/mcp/bin/socials-mcp.js onboard.
 
 ── EITHER PATH ────────────────────────────────────────────
-CONNECT THIS CHAT: give me the exact connector configuration for THIS agent
-(Claude.ai custom connector / `claude mcp add` / codex config.toml / Cursor settings /
-Gemini settings.json — pick mine). After I add it, call connection_status to prove the
-tools are live before going further.
+CONNECT THIS CHAT — hand me the exact config for MY agent:
+   - Claude.ai / Claude Desktop: Settings → Connectors → Add custom connector → paste <MY_MCP_URL>
+   - Claude Code: `claude mcp add --transport http socials <MY_MCP_URL>` (stdio variant for local)
+   - Codex: `[mcp_servers.socials] url = "<MY_MCP_URL>"` in config, then `codex mcp login socials`
+   - Cursor: Settings → MCP Servers → Add → paste <MY_MCP_URL>
+   - Gemini CLI: mcpServers block with the URL in ~/.gemini/settings.json
+   - Anything else: follow https://raw.githubusercontent.com/aryaminus/socials-assistant/main/agents/README.md
+   After I add it, call connection_status to prove the tools are live before going further.
 
-SKILLS: do not fetch or install any files. Read the six skill instructions directly from
-https://github.com/aryaminus/socials-assistant/tree/main/skills and simply follow them
-when relevant. If you support `npx skills add aryaminus/socials-assistant`, offer that
-as an option and let me decide.
+SKILLS — three routes, my choice (never install without asking):
+   - Default: read the six skills directly from
+     https://github.com/aryaminus/socials-assistant/tree/main/skills and follow them when
+     relevant (socials-connect, weekly-digest, script-review, publish-package,
+     brand-outreach, media-kit). Tell me which ones you've read and will follow.
+   - If you support it, offer: `npx skills add aryaminus/socials-assistant`
+   - If I'm on claude.ai, offer the native route: download the six .skill bundles from
+     https://github.com/aryaminus/socials-assistant/releases/latest → Settings →
+     Capabilities → Skills → + (offer to review their contents with me first)
+
+IF A CONSENT LINK FAILS with redirect_uri_mismatch / invalid_redirect_uri: give me the exact
+URI to add in that platform's developer console (<MY_MCP_ORIGIN>/oauth/<platform>/done, or
+<MY_MCP_ORIGIN>/callback for Google sign-in — /setup lists them all), have me save it, then
+retry the connect call. Never abandon me at an error screen.
 
 FIRST DATA RUN (as soon as at least one platform is connected):
-snapshot → report per-platform row counts → profile_get; if empty, auto-fill
-audience_summary and content_series from the snapshot, then ask me ONLY the four human
-questions (niche, tone, goals, rate floor) and save via profile_set → finish with
-digest_data + top_content and give me my first weekly digest in plain language.
+snapshot → report per-platform row counts → if I use TikTok, ask now for this week's Studio
+CSV export and call import_tiktok_csv (retention/traffic/search data has no official API) →
+profile_get; if empty, auto-fill audience_summary and content_series from the snapshot, then
+ask me ONLY the four human questions (niche, tone, goals, rate floor) and save via
+profile_set → finish with digest_data + top_content + audience_overview and give me my first
+weekly digest in plain language.
 
 Weekly habit from now on: I say "snapshot please" (and drop my TikTok Studio CSV when
 I have one — Studio-only data like retention has no official API).
