@@ -15,7 +15,8 @@ Click the **Deploy to Cloudflare** button on the repo README (or open
 `https://deploy.workers.cloudflare.com/?url=https://github.com/aryaminus/socials-assistant/tree/main/infra/worker`).
 
 **What the deploy form asks** (all of it skippable except clicking Deploy):
-- Project name + Git account — a private repo is created for you; pushes to it redeploy automatically
+- Git account — required, one-time: connect GitHub/GitLab and authorize Cloudflare; it creates a small repo holding the worker code (no secrets in it) so future pushes auto-deploy. **Check "Create private Git repository"** — the box defaults to off
+- Project name — anything you like
 - KV namespace + D1 database — names prefilled (`socials-mcp-cloud`, `socials-vault`); defaults are fine
 - Three secrets — Google sign-in client ID/secret and `TOKEN_ENCRYPTION_KEY` (`openssl rand -hex 32`). Each field has a `CHANGE_ME` placeholder: **you can click Deploy immediately and set real values later from the `/setup` checklist.** Platform app credentials are never needed at deploy time.
 - Build/deploy commands — left empty; Cloudflare runs `wrangler deploy` inside the worker directory

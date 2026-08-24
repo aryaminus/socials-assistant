@@ -6,7 +6,7 @@ Deploy your own multi-tenant MCP instance. Each user gets an isolated D1 vault w
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/aryaminus/socials-assistant/tree/main/infra/worker)
 
-This auto-provisions a Worker, D1 database, and KV namespace. The deploy button clones the repo into your GitHub; you control the instance.
+This auto-provisions a Worker, D1 database, and KV namespace. The deploy button clones the repo into your GitHub; you control the instance. The form asks you to connect a Git account (required, one-time) — check **Create private Git repository** so your copy isn't public.
 
 ## Manual deploy
 

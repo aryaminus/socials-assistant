@@ -28,7 +28,11 @@ Never ask me to choose — just begin the cloud path and mention the alternative
 1. Give me this link to click:
    https://deploy.workers.cloudflare.com/?url=https://github.com/aryaminus/socials-assistant/tree/main/infra/worker
    Before I click, tell me what the form asks so nothing surprises me:
-   - Project name, Git account, KV + D1 names → defaults are all fine
+   - It will ask to CONNECT A GIT ACCOUNT (GitHub or GitLab) — required, one-time:
+     I click "New GitHub connection", authorize Cloudflare, done. It creates a small repo
+     holding the worker code so future pushes auto-deploy. No secrets live in that repo.
+   - CHECK the "Create private Git repository" box (off by default) so my copy isn't public.
+   - Project name, KV + D1 names → defaults are all fine
    - Three secrets with CHANGE_ME placeholders (Google sign-in client, encryption key) →
      I can deploy immediately with placeholders and set real values later via /setup
    - Platform app credentials are NOT needed at deploy time — reassure me of that
