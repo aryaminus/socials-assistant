@@ -1,4 +1,4 @@
-import { McpAgent } from "@cloudflare/agents/mcp";
+import { McpAgent } from "agents/mcp";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { initVault, type D1Vault } from "./vault.ts";

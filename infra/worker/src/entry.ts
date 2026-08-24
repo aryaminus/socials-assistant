@@ -1,7 +1,7 @@
-import OAuthProvider from "@cloudflare/agents/oauth-provider";
-import { GoogleHandler } from "@cloudflare/agents/google-handler";
+import { OAuthProvider } from "@cloudflare/workers-oauth-provider";
 import { SocialsMCP, type Env } from "./index.ts";
-import { setupPage, setDeployOrigin, configured } from "./platform-oauth.ts";
+import { setupPage, setDeployOrigin } from "./platform-oauth.ts";
+import { GoogleHandler } from "./google-handler.ts";
 
 export { SocialsMCP };
 
@@ -11,13 +11,12 @@ const REPO = "aryaminus/socials-assistant";
 const provider = new OAuthProvider({
   apiRoute: "/mcp",
   apiHandler: SocialsMCP.mount("/mcp"),
-  // @ts-expect-error — handler signature differs across @cloudflare/agents versions; verify at deploy
-  defaultHandler: (req: Request, env: Env, _ctx: unknown) =>
-    GoogleHandler(req, {
-      clientId: configured(env.GOOGLE_LOGIN_CLIENT_ID) ? env.GOOGLE_LOGIN_CLIENT_ID : undefined,
-      clientSecret: configured(env.GOOGLE_LOGIN_CLIENT_SECRET) ? env.GOOGLE_LOGIN_CLIENT_SECRET : undefined,
-      scope: "openid email profile",
-    }, env.OAUTH_KV),
+  // Everything that isn't /mcp or an OAuth endpoint goes to the Google
+  // sign-in handler (Hono app) — it implements /authorize and /callback.
+  defaultHandler: {
+    fetch: (req: Request, env: Env, ctx: ExecutionContext) =>
+      GoogleHandler.fetch(req, env as never, ctx as never),
+  },
   authorizeEndpoint: "/authorize",
   tokenEndpoint: "/token",
   clientRegistrationEndpoint: "/register",

@@ -9,8 +9,12 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@cloudflare/agents": "^0.0.16",
+    "@cloudflare/workers-oauth-provider": "^0.10.3",
+    "@modelcontextprotocol/client": "^2.0.0",
     "@modelcontextprotocol/sdk": "^1.30.0",
+    "@modelcontextprotocol/server": "^2.0.0",
+    "agents": "^0.21.0",
+    "hono": "^4.6.16",
     "zod": "^3.24.0"
   },
   "devDependencies": {

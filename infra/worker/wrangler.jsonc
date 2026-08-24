@@ -3,6 +3,14 @@
   "main": "src/entry.ts",
   "compatibility_date": "2026-07-01",
   "compatibility_flags": ["nodejs_compat"],
+  "durable_objects": {
+    "bindings": [
+      { "class_name": "SocialsMCP", "name": "SocialsMCP" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["SocialsMCP"] }
+  ],
   "d1_databases": [
     {
       "binding": "VAULT",
@@ -16,9 +24,5 @@
   "vars": {
     "ALLOWED_ORIGINS": "*"
   },
-  "secret_env_vars": [
-    "GOOGLE_LOGIN_CLIENT_SECRET",
-    "TOKEN_ENCRYPTION_KEY"
-  ],
   "observability": { "enabled": true }
 }
