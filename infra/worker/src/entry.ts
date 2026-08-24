@@ -88,6 +88,14 @@ export default {
       return skillRedirect(skillName);
     }
 
+    // Liveness + version (referenced by the /setup footer and troubleshooting docs)
+    if (url.pathname === "/health") {
+      return Response.json({ ok: true });
+    }
+    if (url.pathname === "/version") {
+      return Response.json({ name: "socials-mcp-cloud", version: "0.1.0", node: "workers" });
+    }
+
     return provider.fetch(req, env, ctx);
   },
 };
