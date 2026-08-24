@@ -220,14 +220,46 @@ export function setupPage(origin: string, env: Record<string, string | undefined
       return `<tr><td><code>${label}</code></td><td>${d}</td><td>${allSet ? "✅ set" : "⬜ <b>Settings → Variables → Add</b> (encrypt secrets)"}</td></tr>`;
     })
     .join("\n");
+  const agentPrompt = `Help me finish setting up my Socials Assistant cloud deployment.
+
+My MCP server: ${origin}/mcp
+My setup checklist: ${origin}/setup
+
+Work as my guide — one step at a time, verify each step before moving on:
+1. Ask me to paste what the checklist at ${origin}/setup shows; coach me through each missing
+   credential group using https://github.com/aryaminus/socials-assistant/blob/main/docs/onboarding-google.md
+   (and onboarding-meta.md / onboarding-tiktok.md where relevant).
+2. Before issuing any platform consent link, make sure I've registered the redirect URIs
+   listed on the /setup page into each platform's developer app — byte-for-byte.
+3. I'll add values in the Cloudflare dashboard (Workers → socials-mcp-cloud → Settings →
+   Variables, encrypting secrets). Remind me to reload /setup until every row shows ✅.
+4. Hand me the exact connector config for THIS agent using ${origin}/mcp; after I add it,
+   call connection_status to confirm the tools are live.
+5. Connect my platforms one at a time (consent link → I approve in browser → I paste the
+   redirect back), then snapshot, build my creator profile, and give me my first weekly digest.
+
+Rules: official APIs only, never scrape, nothing is ever sent without my approval.`;
+
   const html = `<!doctype html><html><head><meta charset="utf-8"><title>socials-mcp — setup</title>
 <style>body{font-family:-apple-system,system-ui,sans-serif;max-width:760px;margin:40px auto;padding:0 20px;line-height:1.5;color:#111}
 code{background:#f4f4f5;padding:2px 6px;border-radius:4px;font-size:.9em}
 table{border-collapse:collapse;width:100%;margin:16px 0}td,th{border:1px solid #e4e4e7;padding:8px;text-align:left;font-size:.95em}
 h1{font-size:1.5rem}.step{margin:24px 0;padding:16px;border:1px solid #e4e4e7;border-radius:8px}
-.url{background:#0f172a;color:#a5f3fc;padding:10px;border-radius:6px;word-break:break-all;font-family:monospace;font-size:.85em}</style></head><body>
+.url{background:#0f172a;color:#a5f3fc;padding:10px;border-radius:6px;word-break:break-all;font-family:monospace;font-size:.85em}
+.hero{border:1px solid #e4e4e7;border-radius:10px;padding:16px;margin:20px 0}
+.hero-btns{display:flex;gap:10px;flex-wrap:wrap}
+.copybtn{font:inherit;font-size:.95em;padding:10px 16px;border-radius:8px;border:1px solid #e4e4e7;background:#fff;cursor:pointer}
+.copybtn:hover{background:#f4f4f5}
+.copybtn.primary{background:#0f172a;color:#fff;border-color:#0f172a;font-weight:600}
+.muted{color:#71717a;font-size:.9em;margin:10px 0 0}</style></head><body>
 <h1>🛠 socials-mcp — deployment setup</h1>
 <p>This is your private deployment. Finish these steps, then your agents connect to the MCP URL below. No local installation required.</p>
+
+<div class="hero"><div class="hero-btns">
+<button class="copybtn primary" onclick="copyText(AGENT_PROMPT,this)">📋 Copy setup prompt for your agent</button>
+<button class="copybtn" onclick="copyText(MCP_URL,this)">🔗 Copy MCP URL</button>
+</div>
+<p class="muted">Paste the prompt into Claude, ChatGPT, Codex, Cursor, or any agent — it guides you through the rest: credentials, connector, platforms, first digest.</p></div>
 
 <div class="step"><h3>1 · Set variables & secrets</h3><p>Cloudflare dashboard → <b>Workers → socials-mcp-cloud → Settings → Variables</b>. Encrypt anything marked secret.</p>
 <table><tr><th>Name(s)</th><th>Purpose</th><th>Status</th></tr>${list}</table>
@@ -251,12 +283,29 @@ Claude Code: <code>claude mcp add --transport http socials ${origin}/mcp</code><
 Codex: <code>[mcp_servers.socials] url = "${origin}/mcp"</code> then <code>codex mcp login socials</code>.</p></div>
 
 <div class="step"><h3>3 · Install the skills (optional but recommended)</h3>
-<p>Download <code>.skill</code> bundles from <a href="https://github.com/aryaminus/socials-assistant/releases/latest">GitHub Releases</a> → claude.ai <b>Settings → Capabilities → Skills → +</b>. Skills teach the agent the workflows (digest, script review, outreach).</p></div>
+<p>Download <code>.skill</code> bundles from <a href="https://github.com/aryaminus/socials-assistant/releases/latest">GitHub Releases</a> → claude.ai <b>Settings → Capabilities → Skills → +</b>. Skills teach the agent the workflows (digest, script review, outreach). Other agents: <code>npx skills add aryaminus/socials-assistant</code>.</p></div>
 
 <div class="step"><h3>4 · Connect your platforms — inside the chat</h3>
 <p>In your agent: ask to <i>"connect my youtube / instagram / tiktok"</i>. The agent issues an approval link (tool: <code>platform_oauth_url</code>); approve it in the browser; paste the redirected URL back (tool: <code>platform_oauth_exchange</code>). Then say <i>"snapshot my accounts"</i>.</p></div>
 
 <p style="color:#71717a;font-size:.85em">Health: <a href="/health">/health</a> · Version: <a href="/version">/version</a> · This page exposes no secret values.</p>
+<script>
+const MCP_URL = ${JSON.stringify(`${origin}/mcp`)};
+const AGENT_PROMPT = ${JSON.stringify(agentPrompt)};
+function copyText(t, btn) {
+  const done = () => { const o = btn.textContent; btn.textContent = "✓ Copied"; setTimeout(() => { btn.textContent = o; }, 1600); };
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(t).then(done).catch(() => fallbackCopy(t, done));
+  } else { fallbackCopy(t, done); }
+}
+function fallbackCopy(t, done) {
+  const ta = document.createElement("textarea");
+  ta.value = t; ta.style.position = "fixed"; ta.style.opacity = "0";
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand("copy"); } catch (e) {}
+  document.body.removeChild(ta); done();
+}
+</script>
 </body></html>`;
   return new Response(html, { headers: { "content-type": "text/html; charset=utf-8" } });
 }
