@@ -3,7 +3,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { initVault, type D1Vault } from "./vault.ts";
 import { snapshotAll, refreshPlatformToken } from "./platforms.ts";
-import { startPlatformOAuth, completePlatformOAuth, platformConfigured, getDeployOrigin } from "./platform-oauth.ts";
+import { startPlatformOAuth, completePlatformOAuth, platformConfigured, getDeployOrigin, configured } from "./platform-oauth.ts";
 import { comparePeriods, topContent, digestRows, mediaKitRows } from "./analytics.ts";
 
 /**
@@ -42,7 +42,7 @@ export class SocialsMCP extends McpAgent<Env> {
   );
 
   async init() {
-    const vault: D1Vault = initVault(this.env.VAULT, userIdFromProps(this.props as never), this.env.TOKEN_ENCRYPTION_KEY);
+    const vault: D1Vault = initVault(this.env.VAULT, userIdFromProps(this.props as never), configured(this.env.TOKEN_ENCRYPTION_KEY) ? this.env.TOKEN_ENCRYPTION_KEY : undefined);
     const text = (t: unknown) => ({ content: [{ type: "text" as const, text: typeof t === "string" ? t : JSON.stringify(t, null, 2) }] });
 
     this.server.tool("connection_status", "Connected platform accounts + token health.", {}, async () =>
@@ -66,11 +66,11 @@ export class SocialsMCP extends McpAgent<Env> {
       "snapshot",
       "Pull fresh analytics from all connected platforms into your cloud vault (server-side fetches with token refresh).",
       { days: z.number().int().min(1).max(90).default(28) },
-      async ({ days }) => text(await snapshotAll(vault, this.env.TOKEN_ENCRYPTION_KEY, days))
+      async ({ days }) => text(await snapshotAll(vault, configured(this.env.TOKEN_ENCRYPTION_KEY) ? this.env.TOKEN_ENCRYPTION_KEY : undefined, days))
     );
 
     this.server.tool("refresh_token", "Force-refresh stored tokens for a platform (Meta long-lived / Google / TikTok).", { platform: z.enum(["youtube", "instagram", "facebook", "tiktok"]) }, async ({ platform }) =>
-      text(await refreshPlatformToken(vault, platform, this.env.TOKEN_ENCRYPTION_KEY))
+      text(await refreshPlatformToken(vault, platform, configured(this.env.TOKEN_ENCRYPTION_KEY) ? this.env.TOKEN_ENCRYPTION_KEY : undefined))
     );
 
     this.server.tool(

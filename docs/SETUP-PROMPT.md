@@ -20,13 +20,18 @@ How to work with me: do every step YOU can do directly. When a step needs my bro
 credentials, give me the exact URL, tell me precisely what to click, and WAIT for my
 confirmation before continuing. Verify each step succeeded before moving to the next.
 
-START with one question: "Cloud or local?" Explain the tradeoff in two lines:
-cloud = zero install, vault lives in my Cloudflare D1; local = git clone, vault stays
-on this machine. Then follow ONLY that one path.
+START: default to the CLOUD path below. Only fall back if I say so or cloud clearly won't work
+for me (no browser available, region-blocked): then NPX, then LOCAL SOURCE as the last resort.
+Never ask me to choose — just begin the cloud path and mention the alternatives exist.
 
-── CLOUD PATH ─────────────────────────────────────────────
-1. Give me this link to click and walk me through what the Cloudflare screen will ask:
-   https://deploy.workers.cloudflare.com/?url=https://github.com/aryaminus/socials-assistant
+── CLOUD PATH (default) ────────────────────────────────────
+1. Give me this link to click:
+   https://deploy.workers.cloudflare.com/?url=https://github.com/aryaminus/socials-assistant/tree/main/infra/worker
+   Before I click, tell me what the form asks so nothing surprises me:
+   - Project name, Git account, KV + D1 names → defaults are all fine
+   - Three secrets with CHANGE_ME placeholders (Google sign-in client, encryption key) →
+     I can deploy immediately with placeholders and set real values later via /setup
+   - Platform app credentials are NOT needed at deploy time — reassure me of that
    Wait until I tell you my worker URL (ends in .workers.dev).
 2. Send me to https://<my-worker>/setup and have me paste you the checklist — which
    credential groups show ⬜ missing.
@@ -39,12 +44,15 @@ on this machine. Then follow ONLY that one path.
    (Workers → socials-mcp-cloud → Settings → Variables, encrypting secrets),
    then reload /setup and confirm every row shows ✅ before moving on.
 
-── LOCAL PATH ─────────────────────────────────────────────
-1. Show me what scripts/setup.sh does, then run: git clone
-   https://github.com/aryaminus/socials-assistant && cd socials-assistant && ./setup.sh
-2. Run node apps/mcp/bin/socials-mcp.js onboard and coach me through the same platform
-   credentials (same three guides apply).
-3. My MCP endpoint is stdio (bin/socials-mcp.js) or http://localhost:3344/mcp.
+── NPX PATH (fallback) ─────────────────────────────────────
+Only if cloud won't work for me: run `npx @aryaminus/socials-mcp onboard`, coach me through
+the same platform credentials (same three guides), and use stdio or http://localhost:3344/mcp
+as my MCP endpoint.
+
+── LOCAL SOURCE PATH (last resort) ─────────────────────────
+Only if I ask: show me what scripts/setup.sh does, then run
+git clone https://github.com/aryaminus/socials-assistant && cd socials-assistant && ./setup.sh
+then node apps/mcp/bin/socials-mcp.js onboard.
 
 ── EITHER PATH ────────────────────────────────────────────
 CONNECT THIS CHAT: give me the exact connector configuration for THIS agent
@@ -74,7 +82,7 @@ my explicit approval. Tokens stay encrypted; my vault is mine.
 
 ## Why it's shaped this way
 
-Real assistants won't bulk-execute deploys, credential flows, and third-party installs on a "don't ask permission" instruction — and they shouldn't. This prompt works **with** that judgment instead of against it: the agent guides, you act where hands are needed, and it verifies between every step so nothing silently fails. One path is chosen up front, so there's no method-hopping or half-finished setups.
+Real assistants won't bulk-execute deploys, credential flows, and third-party installs on a "don't ask permission" instruction — and they shouldn't. This prompt works **with** that judgment instead of against it: the agent guides, you act where hands are needed, and it verifies between every step so nothing silently fails. Cloud is the default path (zero install); npx and local source exist as fallbacks, so nobody gets stranded if cloud isn't an option.
 
 Typical human time: ~5 minutes active for cloud (plus TikTok app approval if you use TikTok).
 
@@ -82,7 +90,7 @@ Typical human time: ~5 minutes active for cloud (plus TikTok app approval if you
 
 | What | Where |
 |------|-------|
-| Deploy button | <https://deploy.workers.cloudflare.com/?url=https://github.com/aryaminus/socials-assistant> |
+| Deploy button | <https://deploy.workers.cloudflare.com/?url=https://github.com/aryaminus/socials-assistant/tree/main/infra/worker |
 | Setup checklist | `https://<your-worker>.workers.dev/setup` |
 | MCP endpoint | `https://<your-worker>.workers.dev/mcp` |
 | Agent configs | [agents/README.md](../agents/README.md) |

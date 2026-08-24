@@ -18,7 +18,7 @@ Copy the prompt from [docs/SETUP-PROMPT.md](docs/SETUP-PROMPT.md) and paste it i
 
 ### 2. Cloud, zero install
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/aryaminus/socials-assistant)
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/aryaminus/socials-assistant/tree/main/infra/worker)
 
 Then open `https://<your-worker>.workers.dev/setup` for the credential checklist. Full journey: [docs/GET-STARTED-CLOUD.md](docs/GET-STARTED-CLOUD.md).
 

@@ -50,11 +50,14 @@ export interface OAuthEnvShape {
   SOCIALS_TIKTOK_CLIENT_SECRET?: string;
 }
 
+/** A var counts as set only when present and not a CHANGE_ME placeholder (see .env.example). */
+export const configured = (v?: string): boolean => !!v && !v.startsWith("CHANGE_ME");
+
 export function platformConfigured(env: OAuthEnvShape, platform: string): boolean {
   switch (platform) {
-    case "youtube": return !!(env.SOCIALS_GOOGLE_CLIENT_ID && env.SOCIALS_GOOGLE_CLIENT_SECRET);
-    case "meta": return !!(env.SOCIALS_META_APP_ID && env.SOCIALS_META_APP_SECRET);
-    case "tiktok": return !!(env.SOCIALS_TIKTOK_CLIENT_KEY && env.SOCIALS_TIKTOK_CLIENT_SECRET);
+    case "youtube": return configured(env.SOCIALS_GOOGLE_CLIENT_ID) && configured(env.SOCIALS_GOOGLE_CLIENT_SECRET);
+    case "meta": return configured(env.SOCIALS_META_APP_ID) && configured(env.SOCIALS_META_APP_SECRET);
+    case "tiktok": return configured(env.SOCIALS_TIKTOK_CLIENT_KEY) && configured(env.SOCIALS_TIKTOK_CLIENT_SECRET);
     default: return false;
   }
 }
@@ -212,7 +215,7 @@ export function setupPage(origin: string, env: Record<string, string | undefined
   ];
   const list = rows
     .map(([keys, d]) => {
-      const allSet = keys.every((k) => !!env[k]);
+      const allSet = keys.every((k) => configured(env[k]));
       const label = keys.join(" / ");
       return `<tr><td><code>${label}</code></td><td>${d}</td><td>${allSet ? "✅ set" : "⬜ <b>Settings → Variables → Add</b> (encrypt secrets)"}</td></tr>`;
     })

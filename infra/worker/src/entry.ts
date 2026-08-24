@@ -1,7 +1,7 @@
 import OAuthProvider from "@cloudflare/agents/oauth-provider";
 import { GoogleHandler } from "@cloudflare/agents/google-handler";
 import { SocialsMCP, type Env } from "./index.ts";
-import { setupPage, setDeployOrigin } from "./platform-oauth.ts";
+import { setupPage, setDeployOrigin, configured } from "./platform-oauth.ts";
 
 export { SocialsMCP };
 
@@ -14,8 +14,8 @@ const provider = new OAuthProvider({
   // @ts-expect-error — handler signature differs across @cloudflare/agents versions; verify at deploy
   defaultHandler: (req: Request, env: Env, _ctx: unknown) =>
     GoogleHandler(req, {
-      clientId: env.GOOGLE_LOGIN_CLIENT_ID,
-      clientSecret: env.GOOGLE_LOGIN_CLIENT_SECRET,
+      clientId: configured(env.GOOGLE_LOGIN_CLIENT_ID) ? env.GOOGLE_LOGIN_CLIENT_ID : undefined,
+      clientSecret: configured(env.GOOGLE_LOGIN_CLIENT_SECRET) ? env.GOOGLE_LOGIN_CLIENT_SECRET : undefined,
       scope: "openid email profile",
     }, env.OAUTH_KV),
   authorizeEndpoint: "/authorize",

@@ -12,9 +12,15 @@ upload skills → connect platforms inside the chat → done
 ### 1. Deploy your own instance (one click)
 
 Click the **Deploy to Cloudflare** button on the repo README (or open
-`https://deploy.workers.cloudflare.com/?url=https://github.com/aryaminus/socials-assistant`).
+`https://deploy.workers.cloudflare.com/?url=https://github.com/aryaminus/socials-assistant/tree/main/infra/worker`).
 
-Cloudflare clones the repo, provisions the Worker + D1 vault + KV namespace, and gives you a URL like `https://socials-mcp-cloud.<your-subdomain>.workers.dev`.
+**What the deploy form asks** (all of it skippable except clicking Deploy):
+- Project name + Git account — a private repo is created for you; pushes to it redeploy automatically
+- KV namespace + D1 database — names prefilled (`socials-mcp-cloud`, `socials-vault`); defaults are fine
+- Three secrets — Google sign-in client ID/secret and `TOKEN_ENCRYPTION_KEY` (`openssl rand -hex 32`). Each field has a `CHANGE_ME` placeholder: **you can click Deploy immediately and set real values later from the `/setup` checklist.** Platform app credentials are never needed at deploy time.
+- Build/deploy commands — left empty; Cloudflare runs `wrangler deploy` inside the worker directory
+
+Cloudflare clones the worker (it lives in `infra/worker/`), provisions D1 + KV, and gives you a URL like `https://socials-mcp-cloud.<your-subdomain>.workers.dev`.
 
 <details><summary>If the button can't provision resources (rare)</summary>
 Create them manually: <code>npx wrangler d1 create socials-vault</code>, <code>npx wrangler kv namespace create OAUTH_KV</code>, paste IDs into <code>wrangler.jsonc</code>, redeploy. Full manual path: <a href="../infra/worker/README.md">infra/worker/README.md</a>.
