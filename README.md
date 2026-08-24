@@ -14,7 +14,7 @@ Official APIs only. No scraping. No ToS risk.
 
 ### 1. One prompt (easiest)
 
-Copy the prompt from [docs/SETUP-PROMPT.md](docs/SETUP-PROMPT.md) and paste it into Claude, ChatGPT, Gemini, Codex, Cursor, or any MCP-compatible agent. It deploys the server, connects it to your agent, installs the 6 skills, walks you through platform OAuth, and runs your first digest. You click consent screens; the agent does the rest.
+Copy the prompt from [docs/SETUP-PROMPT.md](docs/SETUP-PROMPT.md) and paste it into Claude, ChatGPT, Gemini, Codex, Cursor, or any MCP-compatible agent. It asks you one question (cloud or local), then guides you step by step — handing you each link to click, coaching you through platform credentials from the repo's own docs, connecting your agent, and verifying every step before moving on. You stay in control; nothing runs without your go-ahead.
 
 ### 2. Cloud, zero install
 
