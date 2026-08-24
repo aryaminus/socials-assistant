@@ -15,32 +15,32 @@
     "@modelcontextprotocol/server": "^2.0.0",
     "agents": "^0.21.0",
     "hono": "^4.6.16",
-    "zod": "^3.24.0"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20250101.0",
+    "@cloudflare/workers-types": "^5.20260820.1",
     "typescript": "^5.5.0",
     "wrangler": "^4.0.0"
   },
   "cloudflare": {
     "bindings": {
       "GOOGLE_LOGIN_CLIENT_ID": {
-        "description": "Google OAuth client ID (**Web application** type) for MCP sign-in. Guide: [onboarding-google.md](https://github.com/aryaminus/socials-assistant/blob/main/docs/onboarding-google.md). Skippable now — set later via `/setup`."
+        "description": "Google OAuth client ID (**Web application** type) for MCP sign-in. Guide: [onboarding-google.md](https://github.com/aryaminus/socials-assistant/blob/main/docs/onboarding-google.md). Skippable now \u2014 set later via `/setup`."
       },
       "GOOGLE_LOGIN_CLIENT_SECRET": {
-        "description": "Secret for the same Google OAuth client. Skippable now — set later via `/setup`."
+        "description": "Secret for the same Google OAuth client. Skippable now \u2014 set later via `/setup`."
       },
       "TOKEN_ENCRYPTION_KEY": {
-        "description": "Any 64-char hex string — generate with `openssl rand -hex 32`. Encrypts platform tokens in D1. Rotating it later requires reconnecting platforms."
+        "description": "Any 64-char hex string \u2014 generate with `openssl rand -hex 32`. Encrypts platform tokens in D1. Rotating it later requires reconnecting platforms."
       },
       "SOCIALS_GOOGLE_CLIENT_ID": {
-        "description": "YouTube data app credentials — optional at deploy. The same Google client as sign-in works. Set later via `/setup`."
+        "description": "YouTube data app credentials \u2014 optional at deploy. The same Google client as sign-in works. Set later via `/setup`."
       },
       "SOCIALS_META_APP_ID": {
-        "description": "Instagram + Facebook app — optional at deploy. Guide: [onboarding-meta.md](https://github.com/aryaminus/socials-assistant/blob/main/docs/onboarding-meta.md)."
+        "description": "Instagram + Facebook app \u2014 optional at deploy. Guide: [onboarding-meta.md](https://github.com/aryaminus/socials-assistant/blob/main/docs/onboarding-meta.md)."
       },
       "SOCIALS_TIKTOK_CLIENT_KEY": {
-        "description": "TikTok app — optional at deploy (approval takes days). Guide: [onboarding-tiktok.md](https://github.com/aryaminus/socials-assistant/blob/main/docs/onboarding-tiktok.md)."
+        "description": "TikTok app \u2014 optional at deploy (approval takes days). Guide: [onboarding-tiktok.md](https://github.com/aryaminus/socials-assistant/blob/main/docs/onboarding-tiktok.md)."
       }
     }
   }
