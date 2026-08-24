@@ -11,7 +11,7 @@ import {
 } from "@socials/connectors";
 import { isPlatform, type NormalizedSnapshot, type Platform } from "@socials/shared";
 
-export const VERSION = "0.4.8";
+export const VERSION = "0.4.9";
 
 // ---------------------------------------------------------------------------
 // config file (env vars win over file)

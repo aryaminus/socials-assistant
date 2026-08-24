@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented here. Format: Keep a Changelog; versioning: SemVer.
 
+## [0.4.9] — 2026-08-23
+
+### Fixed
+- Deploy button targets the worker subdirectory (`infra/worker`) so Cloudflare detects the wrangler config and provisions D1 + KV correctly
+- Worker-scoped deploy-form secrets with `CHANGE_ME` placeholders + in-form binding descriptions; runtime treats placeholders as unset
+- Setup prompt: consent-first guided flow, cloud default with npx/local fallbacks, per-agent connector configs, redirect-mismatch self-recovery
+
 ## [0.4.8] — 2026-08-23
 
 ### Changed
