@@ -204,7 +204,7 @@ jobs:
       id-token: write          # for cosign provenance; npm Trusted Publishing (OIDC) when ready
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v4
         with:
           node-version: 25
@@ -248,7 +248,7 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v4
         with:
           node-version: 25
